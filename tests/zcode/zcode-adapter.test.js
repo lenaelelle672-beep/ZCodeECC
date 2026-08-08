@@ -54,6 +54,10 @@ function parseFlatFrontmatter(source) {
 
 function sourceCounts() {
   const hooks = readJson(path.join(repoRoot, 'hooks', 'hooks.json')).hooks;
+  const optionalMcpServers = {
+    ...readJson(path.join(repoRoot, 'mcp-configs', 'mcp-servers.json')).mcpServers,
+    ...readJson(path.join(repoRoot, '.mcp.json')).mcpServers,
+  };
   return {
     agents: fs.readdirSync(path.join(repoRoot, 'agents')).filter(name => name.endsWith('.md')).length,
     commands: fs.readdirSync(path.join(repoRoot, 'commands')).filter(name => name.endsWith('.md')).length,
@@ -61,7 +65,7 @@ function sourceCounts() {
     rules: fs.readdirSync(path.join(repoRoot, 'rules'), { recursive: true })
       .filter(name => name.endsWith('.md')).length,
     hooks: Object.values(hooks).flatMap(groups => groups.flatMap(group => group.hooks || [])).length,
-    mcp: 1,
+    mcp: Object.keys(optionalMcpServers).length,
   };
 }
 
@@ -96,7 +100,7 @@ test('builds a native ZCode plugin with exact ECC 2.2.0 surface counts', () => {
       skills: 284,
       rules: 122,
       hooks: 21,
-      mcp: 1,
+      mcp: 36,
     });
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
