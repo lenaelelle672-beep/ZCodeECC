@@ -18,7 +18,7 @@ function getRunsFilePath(options = {}) {
     return path.resolve(options.runsFilePath);
   }
 
-  return path.join(resolveHomeDir(options.homeDir), '.zcode', 'state', 'skill-runs.jsonl');
+  return path.join(resolveHomeDir(options.homeDir), '.claude', 'state', 'skill-runs.jsonl');
 }
 
 function toNullableNumber(value, fieldName) {

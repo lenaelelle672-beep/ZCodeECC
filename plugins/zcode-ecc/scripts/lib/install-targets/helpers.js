@@ -3,7 +3,7 @@ const os = require('os');
 const path = require('path');
 
 const PLATFORM_SOURCE_PATH_OWNERS = Object.freeze({
-  '.zcode-plugin': 'claude',
+  '.claude-plugin': 'claude',
   '.codex': 'codex',
   '.cursor': 'cursor',
   '.gemini': 'gemini',

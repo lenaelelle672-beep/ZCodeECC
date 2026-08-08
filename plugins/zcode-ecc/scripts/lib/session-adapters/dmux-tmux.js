@@ -22,7 +22,7 @@ function isSessionNameTarget(target, cwd) {
     return false;
   }
 
-  const coordinationDir = path.resolve(cwd, '.zcode', 'orchestration', target);
+  const coordinationDir = path.resolve(cwd, '.claude', 'orchestration', target);
   return fs.existsSync(coordinationDir) && fs.statSync(coordinationDir).isDirectory();
 }
 

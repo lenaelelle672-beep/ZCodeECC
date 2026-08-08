@@ -2,12 +2,14 @@
 description: "Validate epic readiness, dependencies, and coordination policy."
 ---
 
+> ZCode compatibility boundary: The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies.
+
 # /epic-validate
 
 Validate a single epic issue before publishing or review handoff.
 
 ```bash
-node scripts/github-coordination.js validate <issue-number> --repo <owner/repo>
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/github-coordination.js" validate <issue-number> --repo <owner/repo>
 ```
 
 What this checks:

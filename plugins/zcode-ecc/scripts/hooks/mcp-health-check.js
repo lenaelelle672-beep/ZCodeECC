@@ -4,7 +4,7 @@
 /**
  * MCP health-check hook.
  *
- * Compatible with ZCode's existing hook events:
+ * Compatible with Claude Code's existing hook events:
  * - PreToolUse: probe MCP server health before MCP tool execution
  * - PostToolUseFailure: mark unhealthy servers, attempt reconnect, and re-probe
  *
@@ -25,7 +25,7 @@ const DEFAULT_TIMEOUT_MS = 5000;
 const DEFAULT_BACKOFF_MS = 30 * 1000;
 const MAX_BACKOFF_MS = 10 * 60 * 1000;
 // The preflight HTTP probe only checks reachability; it does not have access to
-// ZCode's stored OAuth bearer token. Treat auth-gated responses as
+// Claude Code's stored OAuth bearer token. Treat auth-gated responses as
 // reachable so the real MCP client can attempt the authenticated call. A
 // Streamable HTTP MCP server can also return 406 to a bare GET that omits
 // Accept: text/event-stream; that still proves the endpoint is alive.
@@ -44,33 +44,49 @@ function envNumber(name, fallback) {
   return Number.isFinite(value) && value >= 0 ? value : fallback;
 }
 
+function isZcodeRuntime(env = process.env) {
+  return String(env.ECC_HARNESS || '').toLowerCase() === 'zcode'
+    || Boolean(env.ZCODE_PLUGIN_ROOT)
+    || Boolean(env.ZCODE_HOOK_EVENT_NAME);
+}
+
 function stateFilePath() {
   if (process.env.ECC_MCP_HEALTH_STATE_PATH) {
     return path.resolve(process.env.ECC_MCP_HEALTH_STATE_PATH);
   }
   const dataHome = process.env.ECC_AGENT_DATA_HOME
     ? path.resolve(process.env.ECC_AGENT_DATA_HOME)
-    : path.join(os.homedir(), '.zcode');
+    : isZcodeRuntime()
+      ? path.join(os.homedir(), '.zcode', 'ecc-data')
+      : path.join(os.homedir(), '.claude');
   return path.join(dataHome, 'mcp-health-cache.json');
 }
 
-function configPaths() {
-  if (process.env.ECC_MCP_CONFIG_PATH) {
-    return process.env.ECC_MCP_CONFIG_PATH
+function configPaths(options = {}) {
+  const env = options.env || process.env;
+  if (env.ECC_MCP_CONFIG_PATH) {
+    return env.ECC_MCP_CONFIG_PATH
       .split(path.delimiter)
       .map(entry => entry.trim())
       .filter(Boolean)
       .map(entry => path.resolve(entry));
   }
 
-  const cwd = process.cwd();
-  const home = os.homedir();
+  const cwd = options.cwd || process.cwd();
+  const home = options.home || os.homedir();
+
+  if (isZcodeRuntime(env)) {
+    return [
+      path.join(cwd, '.zcode', 'config.json'),
+      path.join(home, '.zcode', 'cli', 'config.json')
+    ];
+  }
 
   return [
-    path.join(cwd, '.zcode.json'),
-    path.join(cwd, '.zcode', 'settings.json'),
-    path.join(home, '.zcode.json'),
-    path.join(home, '.zcode', 'settings.json')
+    path.join(cwd, '.claude.json'),
+    path.join(cwd, '.claude', 'settings.json'),
+    path.join(home, '.claude.json'),
+    path.join(home, '.claude', 'settings.json')
   ];
 }
 
@@ -656,7 +672,7 @@ async function handlePreToolUse(rawInput, input, target, statePathValue, now) {
     ? ` Reconnect attempt: ${reconnect.success ? 'ok' : reconnect.reason}.`
     : '';
   logs.push(
-    `[MCPHealthCheck] ${target.server} is unavailable (${probe.reason}). Blocking ${target.tool || 'tool'} so Claude can fall back to non-MCP tools.${reconnectSuffix}`
+    `[MCPHealthCheck] ${target.server} is unavailable (${probe.reason}). Blocking ${target.tool || 'tool'} so the agent can fall back to non-MCP tools.${reconnectSuffix}`
   );
 
   return { rawInput, exitCode: shouldFailOpen() ? 0 : 2, logs };
@@ -734,7 +750,9 @@ async function main() {
     return;
   }
 
-  const eventName = process.env.CLAUDE_HOOK_EVENT_NAME || 'PreToolUse';
+  const eventName = process.env.ZCODE_HOOK_EVENT_NAME
+    || process.env.CLAUDE_HOOK_EVENT_NAME
+    || 'PreToolUse';
   const now = Date.now();
   const statePathValue = stateFilePath();
 
@@ -747,7 +765,17 @@ async function main() {
   process.exit(result.exitCode);
 }
 
-main().catch(error => {
-  process.stderr.write(`[MCPHealthCheck] Unexpected error: ${error.message}\n`);
-  process.exit(0);
-});
+if (require.main === module) {
+  main().catch(error => {
+    process.stderr.write(`[MCPHealthCheck] Unexpected error: ${error.message}\n`);
+    process.exit(0);
+  });
+}
+
+module.exports = {
+  configPaths,
+  extractMcpTarget,
+  isZcodeRuntime,
+  resolveServerConfig,
+  stateFilePath,
+};

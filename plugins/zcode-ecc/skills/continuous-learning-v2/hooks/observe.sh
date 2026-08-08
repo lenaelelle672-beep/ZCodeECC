@@ -2,19 +2,19 @@
 # Continuous Learning v2 - Observation Hook
 #
 # Captures tool use events for pattern analysis.
-# ZCode passes hook data via stdin as JSON.
+# Claude Code passes hook data via stdin as JSON.
 #
 # v2.1: Project-scoped observations — detects current project context
 #       and writes observations to project-specific directory.
 #
 # Registered via plugin hooks/hooks.json (auto-loaded when plugin is enabled).
-# Can also be registered manually in ~/.zcode/settings.json.
+# Can also be registered manually in ~/.claude/settings.json.
 
 set -e
 
 # Hook phase from CLI argument: "pre" (PreToolUse) or "post" (PostToolUse).
 # Manual settings.json installs can call this script without the plugin
-# wrapper's positional phase argument, but ZCode still exposes the hook
+# wrapper's positional phase argument, but Claude Code still exposes the hook
 # event name in CLAUDE_HOOK_EVENT_NAME.  Fall back to that env var before
 # defaulting to post so manually registered PreToolUse hooks are recorded as
 # tool_start instead of being silently misclassified as tool_complete.
@@ -31,7 +31,7 @@ fi
 # Read stdin first (before project detection)
 # ─────────────────────────────────────────────
 
-# Read JSON from stdin (ZCode hook format)
+# Read JSON from stdin (Claude Code hook format)
 INPUT_JSON=$(cat)
 
 # Exit if no input
@@ -117,10 +117,10 @@ except(KeyError, TypeError, ValueError):
 if [ -n "$STDIN_CWD" ] && [ -d "$STDIN_CWD" ]; then
   _GIT_ROOT=$(git -C "$STDIN_CWD" rev-parse --show-toplevel 2>/dev/null || true)
   if [ -n "$_GIT_ROOT" ]; then
-    export ZCODE_PROJECT_DIR="$_GIT_ROOT"
+    export CLAUDE_PROJECT_DIR="$_GIT_ROOT"
     unset CLV2_NO_PROJECT
   else
-    unset ZCODE_PROJECT_DIR
+    unset CLAUDE_PROJECT_DIR
     export CLV2_NO_PROJECT=1
   fi
 fi
@@ -170,7 +170,7 @@ _ECC_AGENT_ID=$(echo "$INPUT_JSON" | "$PYTHON_CMD" -c "import json,sys; print(js
 [ -n "$_ECC_AGENT_ID" ] && exit 0
 
 # Layer 5: known observer-session path exclusions.
-_ECC_SKIP_PATHS="${ECC_OBSERVE_SKIP_PATHS:-observer-sessions,.zcode-mem}"
+_ECC_SKIP_PATHS="${ECC_OBSERVE_SKIP_PATHS:-observer-sessions,.claude-mem}"
 if [ -n "$STDIN_CWD" ]; then
   IFS=',' read -ra _ECC_SKIP_ARRAY <<< "$_ECC_SKIP_PATHS"
   for _pattern in "${_ECC_SKIP_ARRAY[@]}"; do
@@ -208,7 +208,7 @@ if [ ! -f "$PURGE_MARKER" ] || [ "$(find "$PURGE_MARKER" -mtime +1 2>/dev/null)"
 fi
 
 # Parse using Python via stdin pipe (safe for all JSON payloads)
-# Pass HOOK_PHASE via env var since ZCode does not include hook type in stdin JSON
+# Pass HOOK_PHASE via env var since Claude Code does not include hook type in stdin JSON
 PARSED=$(echo "$INPUT_JSON" | HOOK_PHASE="$HOOK_PHASE" "$PYTHON_CMD" -c '
 import json
 import sys
@@ -218,12 +218,12 @@ try:
     data = json.load(sys.stdin)
 
     # Determine event type from CLI argument passed via env var.
-    # ZCode does NOT include a "hook_type" field in the stdin JSON,
+    # Claude Code does NOT include a "hook_type" field in the stdin JSON,
     # so we rely on the shell argument ("pre" or "post") instead.
     hook_phase = os.environ.get("HOOK_PHASE", "post")
     event = "tool_start" if hook_phase == "pre" else "tool_complete"
 
-    # Extract fields - ZCode hook format
+    # Extract fields - Claude Code hook format
     tool_name = data.get("tool_name", data.get("tool", "unknown"))
     tool_input = data.get("tool_input", data.get("input", {}))
     tool_output = data.get("tool_response")

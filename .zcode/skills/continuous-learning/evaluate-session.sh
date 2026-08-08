@@ -1,19 +1,19 @@
 #!/bin/bash
 # Continuous Learning - Session Evaluator
-# Runs on Stop hook to extract reusable patterns from ZCode sessions
+# Runs on Stop hook to extract reusable patterns from Claude Code sessions
 #
 # Why Stop hook instead of UserPromptSubmit:
 # - Stop runs once at session end (lightweight)
 # - UserPromptSubmit runs every message (heavy, adds latency)
 #
-# Hook config (in ~/.zcode/settings.json):
+# Hook config (in ~/.claude/settings.json):
 # {
 #   "hooks": {
 #     "Stop": [{
 #       "matcher": "*",
 #       "hooks": [{
 #         "type": "command",
-#         "command": "~/.zcode/skills/continuous-learning/evaluate-session.sh"
+#         "command": "~/.claude/skills/continuous-learning/evaluate-session.sh"
 #       }]
 #     }]
 #   }
@@ -21,13 +21,13 @@
 #
 # Patterns to detect: error_resolution, debugging_techniques, workarounds, project_specific
 # Patterns to ignore: simple_typos, one_time_fixes, external_api_issues
-# Extracted skills saved to: ~/.zcode/skills/learned/
+# Extracted skills saved to: ~/.claude/skills/learned/
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$SCRIPT_DIR/config.json"
-LEARNED_SKILLS_PATH="${HOME}/.zcode/skills/learned"
+LEARNED_SKILLS_PATH="${HOME}/.claude/skills/learned"
 MIN_SESSION_LENGTH=10
 
 # Load config if exists
@@ -36,14 +36,14 @@ if [ -f "$CONFIG_FILE" ]; then
     echo "[ContinuousLearning] jq is required to parse config.json but not installed, using defaults" >&2
   else
     MIN_SESSION_LENGTH=$(jq -r '.min_session_length // 10' "$CONFIG_FILE")
-    LEARNED_SKILLS_PATH=$(jq -r '.learned_skills_path // "~/.zcode/skills/learned/"' "$CONFIG_FILE" | sed "s|~|$HOME|")
+    LEARNED_SKILLS_PATH=$(jq -r '.learned_skills_path // "~/.claude/skills/learned/"' "$CONFIG_FILE" | sed "s|~|$HOME|")
   fi
 fi
 
 # Ensure learned skills directory exists
 mkdir -p "$LEARNED_SKILLS_PATH"
 
-# Get transcript path from stdin JSON (ZCode hook input)
+# Get transcript path from stdin JSON (Claude Code hook input)
 # Falls back to env var for backwards compatibility
 stdin_data=$(cat)
 transcript_path=$(echo "$stdin_data" | grep -o '"transcript_path":"[^"]*"' | head -1 | cut -d'"' -f4)

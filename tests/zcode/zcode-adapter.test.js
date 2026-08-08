@@ -2,6 +2,7 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const repoRoot = path.resolve(__dirname, '../..');
 const builderPath = path.join(repoRoot, 'scripts', 'zcode', 'build-adapter.js');
@@ -134,8 +135,13 @@ test('builds an isolated plugin without canonical auto-discovery surfaces', () =
 
     const canonicalHooks = fs.readFileSync(path.join(pluginRoot, 'runtime', 'canonical-hooks.json'), 'utf8');
     const resolvedRuntime = fs.readFileSync(path.join(pluginRoot, 'scripts', 'lib', 'resolve-ecc-root.js'), 'utf8');
-    assert.doesNotMatch(canonicalHooks, /CLAUDE_PLUGIN_ROOT|\.claude/);
-    assert.doesNotMatch(resolvedRuntime, /CLAUDE_PLUGIN_ROOT|\.claude/);
+    assert.match(canonicalHooks, /CLAUDE_PLUGIN_ROOT/);
+    assert.match(resolvedRuntime, /CLAUDE_PLUGIN_ROOT/);
+    assert.ok(fs.existsSync(path.join(pluginRoot, 'scripts', 'auto-update.js')));
+    assert.doesNotMatch(
+      fs.readFileSync(path.join(pluginRoot, 'skills', 'configure-ecc', 'SKILL.md'), 'utf8'),
+      /scripts\/setup\.js/
+    );
 
     const pluginHooks = readJson(path.join(pluginRoot, 'hooks', 'hooks.json')).hooks;
     assert.ok(Object.keys(pluginHooks).every(event => supportedHookEvents.has(event)));
@@ -225,6 +231,111 @@ test('normalizes ZCode command frontmatter and harness paths', () => {
   }
 });
 
+test('uses semantic overrides and labels remaining harness-only workflows as limited', () => {
+  const { outputRoot } = buildFixture();
+  try {
+    const compatibility = readJson(path.join(outputRoot, '.zcode', 'compatibility-manifest.json'));
+    const configure = fs.readFileSync(
+      path.join(outputRoot, '.zcode', 'skills', 'configure-ecc', 'SKILL.md'),
+      'utf8'
+    );
+    const autoUpdate = fs.readFileSync(
+      path.join(outputRoot, '.zcode', 'commands', 'auto-update.md'),
+      'utf8'
+    );
+    assert.doesNotMatch(configure, /^\s*claude plugin\s+(?:list|marketplace)/im);
+    assert.doesNotMatch(configure, /^\s*(?:node|npx).*--mode claude-plugin/im);
+    assert.match(configure, /Plugin Management/);
+    assert.match(autoUpdate, /Plugin Management/);
+    assert.match(autoUpdate, /--target zcode/);
+
+    const configureRecord = compatibility.artifacts.find(record => (
+      record.kind === 'skills' && record.source === 'skills/configure-ecc/SKILL.md'
+    ));
+    const autonomousRecord = compatibility.artifacts.find(record => (
+      record.kind === 'skills' && record.source === 'skills/autonomous-loops/SKILL.md'
+    ));
+    const multiPlanRecord = compatibility.artifacts.find(record => (
+      record.kind === 'commands' && record.source === 'commands/multi-plan.md'
+    ));
+    const ckRecord = compatibility.artifacts.find(record => (
+      record.kind === 'skills' && record.source === 'skills/ck/SKILL.md'
+    ));
+    const epicRecord = compatibility.artifacts.find(record => (
+      record.kind === 'commands' && record.source === 'commands/epic-publish.md'
+    ));
+    assert.strictEqual(configureRecord.status, 'adapted');
+    assert.match(configureRecord.note, /semantic override/i);
+    assert.strictEqual(autonomousRecord.status, 'limited');
+    assert.strictEqual(ckRecord.status, 'limited');
+    assert.match(ckRecord.note, /non-Markdown asset/);
+    assert.strictEqual(multiPlanRecord.status, 'limited');
+    assert.strictEqual(epicRecord.status, 'limited');
+    assert.match(epicRecord.note, /sql\.js/);
+    assert.match(
+      fs.readFileSync(path.join(outputRoot, '.zcode', 'commands', 'multi-plan.md'), 'utf8'),
+      /ZCode compatibility boundary/
+    );
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('ships command runtime dependencies and emits portable script paths', () => {
+  const { outputRoot } = buildFixture();
+  const temporaryHome = fs.mkdtempSync(path.join(os.tmpdir(), 'zcode-ecc-command-home-'));
+  try {
+    const pluginRoot = path.join(outputRoot, pluginRelativeRoot);
+    const epic = fs.readFileSync(path.join(pluginRoot, 'commands', 'epic-publish.md'), 'utf8');
+    const setupPm = fs.readFileSync(path.join(pluginRoot, 'commands', 'setup-pm.md'), 'utf8');
+    assert.match(epic, /ZCODE_PLUGIN_ROOT:-\$HOME\/\.zcode.*github-coordination\.js/);
+    assert.match(setupPm, /ZCODE_PLUGIN_ROOT:-\$HOME\/\.zcode.*setup-package-manager\.js/);
+    for (const scriptName of [
+      'github-coordination.js',
+      'harness-audit.js',
+      'install-apply.js',
+      'install-plan.js',
+      'plan-canvas.js',
+      'setup-package-manager.js',
+      'skills-health.js',
+    ]) {
+      assert.ok(fs.existsSync(path.join(pluginRoot, 'scripts', scriptName)), `missing ${scriptName}`);
+    }
+    assert.ok(fs.existsSync(path.join(pluginRoot, 'manifests', 'install-modules.json')));
+    const plan = JSON.parse(execFileSync(process.execPath, [
+      path.join(pluginRoot, 'scripts', 'install-plan.js'),
+      '--profile', 'minimal',
+      '--target', 'zcode',
+      '--json',
+    ], {
+      env: { ...process.env, HOME: temporaryHome, ZCODE_PLUGIN_ROOT: pluginRoot },
+      encoding: 'utf8',
+      maxBuffer: 8 * 1024 * 1024,
+    }));
+    assert.strictEqual(plan.target, 'zcode');
+    assert.strictEqual(plan.profileId, 'minimal');
+    assert.ok(plan.operations.length > 0);
+    assert.ok(plan.operations.some(operation => operation.sourceRelativePath === 'commands'));
+    const dryRun = JSON.parse(execFileSync(process.execPath, [
+      path.join(pluginRoot, 'scripts', 'install-apply.js'),
+      '--profile', 'minimal',
+      '--target', 'zcode',
+      '--dry-run',
+      '--json',
+    ], {
+      env: { ...process.env, HOME: temporaryHome, ZCODE_PLUGIN_ROOT: pluginRoot },
+      encoding: 'utf8',
+      maxBuffer: 8 * 1024 * 1024,
+    }));
+    assert.strictEqual(dryRun.dryRun, true);
+    assert.strictEqual(dryRun.plan.target, 'zcode');
+    assert.ok(!fs.existsSync(path.join(temporaryHome, '.zcode')));
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+    fs.rmSync(temporaryHome, { recursive: true, force: true });
+  }
+});
+
 test('generates only supported ZCode hook events and explicit compatibility limits', () => {
   const { outputRoot } = buildFixture();
   try {
@@ -250,7 +361,8 @@ test('generates only supported ZCode hook events and explicit compatibility limi
     const preCompact = hookRecords.find(record => record.sourceEvent === 'PreCompact');
     const sessionEnd = hookRecords.find(record => record.sourceEvent === 'SessionEnd');
     assert.strictEqual(preCompact.status, 'limited');
-    assert.strictEqual(preCompact.targetEvent, 'SessionStart');
+    assert.strictEqual(preCompact.targetEvent, 'Stop');
+    assert.ok(!Object.values(hooks).flat().some(group => group.matcher === 'compact'));
     assert.strictEqual(sessionEnd.status, 'limited');
     assert.strictEqual(sessionEnd.targetEvent, 'Stop');
     assert.ok(hookRecords.some(record => /runs inline/i.test(record.note || '')));
@@ -270,6 +382,66 @@ test('builder check mode detects drift and passes after a deterministic rebuild'
     assert.deepStrictEqual(checkZcodeAdapter({ repoRoot, outputRoot }).drift, []);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('rebuild preserves unknown ZCode files and removes only marker-owned stale files', () => {
+  const { outputRoot } = buildFixture();
+  try {
+    const { buildZcodeAdapter, checkZcodeAdapter } = require(builderPath);
+    const zcodeRoot = path.join(outputRoot, '.zcode');
+    const configPath = path.join(zcodeRoot, 'config.json');
+    const notePath = path.join(zcodeRoot, 'operator-note.txt');
+    const emptyDirectory = path.join(zcodeRoot, 'operator-empty-directory');
+    const stalePath = path.join(zcodeRoot, 'obsolete-generated.txt');
+    fs.writeFileSync(configPath, '{"plugins":{"enabled":true}}\n');
+    fs.writeFileSync(notePath, 'preserve me\n');
+    fs.mkdirSync(emptyDirectory);
+    fs.writeFileSync(stalePath, 'remove me\n');
+
+    const markerPath = path.join(zcodeRoot, '.generated-by-zcode-ecc');
+    const marker = readJson(markerPath);
+    marker.files.push('obsolete-generated.txt');
+    fs.writeFileSync(markerPath, `${JSON.stringify(marker, null, 2)}\n`);
+
+    buildZcodeAdapter({ repoRoot, outputRoot });
+    assert.ok(fs.existsSync(configPath));
+    assert.ok(fs.existsSync(notePath));
+    assert.ok(fs.existsSync(emptyDirectory));
+    assert.ok(!fs.existsSync(stalePath));
+    assert.deepStrictEqual(checkZcodeAdapter({ repoRoot, outputRoot }).drift, []);
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('builder refuses live home, unowned targets, and generated-output symlinks', () => {
+  const { buildZcodeAdapter } = require(builderPath);
+  assert.throws(
+    () => buildZcodeAdapter({ repoRoot, outputRoot: os.homedir() }),
+    /user home/
+  );
+
+  const unownedRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'zcode-ecc-unowned-'));
+  const symlinkRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'zcode-ecc-symlink-'));
+  try {
+    fs.mkdirSync(path.join(unownedRoot, '.zcode'));
+    fs.writeFileSync(path.join(unownedRoot, '.zcode', 'config.json'), '{}\n');
+    assert.throws(
+      () => buildZcodeAdapter({ repoRoot, outputRoot: unownedRoot }),
+      /non-generated directory/
+    );
+
+    const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'zcode-ecc-outside-'));
+    fs.symlinkSync(outside, path.join(symlinkRoot, '.zcode'));
+    assert.throws(
+      () => buildZcodeAdapter({ repoRoot, outputRoot: symlinkRoot }),
+      /symlink/
+    );
+    fs.rmSync(outside, { recursive: true, force: true });
+  } finally {
+    fs.rmSync(unownedRoot, { recursive: true, force: true });
+    fs.rmSync(symlinkRoot, { recursive: true, force: true });
   }
 });
 

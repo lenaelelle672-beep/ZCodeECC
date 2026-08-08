@@ -52,7 +52,7 @@ function run(rawInput) {
     const input = JSON.parse(rawInput);
     // Edit / Write: single file_path
     appendPath(input.tool_input?.file_path);
-    // Edit: array of edits, each with its own file_path
+    // MultiEdit: array of edits, each with its own file_path
     const edits = input.tool_input?.edits;
     if (Array.isArray(edits)) {
       for (const edit of edits) appendPath(edit?.file_path);

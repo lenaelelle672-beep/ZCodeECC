@@ -42,14 +42,14 @@ When the ECC checkout is available, use `config/project-stack-mappings.json` as 
 1. Identify the target harness. Default to `claude` unless the user asks for `cursor`, `codex`, `gemini`, `opencode`, `codebuddy`, `joycode`, or `qwen`.
 2. Detect stacks from project files and show the evidence for each match.
 3. Resolve the smallest useful ECC plan:
-   - project has an `ecc-install.json`: `node scripts/install-plan.js --config ecc-install.json --json`
-   - user named a profile: `node scripts/install-plan.js --profile <profile> --target <target> --json`
-   - user named skills: `node scripts/install-plan.js --skills <skill-ids> --target <target> --json`
+   - project has an `ecc-install.json`: `node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/install-plan.js" --config ecc-install.json --json`
+   - user named a profile: `node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/install-plan.js" --profile <profile> --target <target> --json`
+   - user named skills: `node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/install-plan.js" --skills <skill-ids> --target <target> --json`
    - only language stacks are detected: use the legacy language install dry-run with those language names
 4. Run a dry-run apply command before writing:
 
 ```bash
-node scripts/install-apply.js --target <target> --dry-run --json <language-or-profile-args>
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/install-apply.js" --target <target> --dry-run --json <language-or-profile-args>
 ```
 
 5. Summarize detected stacks, selected modules/components/skills, target paths, skipped unsupported modules, and files that would be changed.

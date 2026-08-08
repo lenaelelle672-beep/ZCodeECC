@@ -2,7 +2,6 @@
 
 const os = require('os');
 
-const { createStateStore } = require('../state-store');
 const { DEFAULT_SCHEMA_VERSION, DEFAULT_POLICY } = require('./policy');
 const { normalizeLabels } = require('./gh-api');
 const { slugifySegment, mapStateToWorkItemStatus, summarizeProjectProjection } = require('./state');
@@ -49,6 +48,21 @@ function upsertCoordinationWorkItem(store, repo, issue, state, action, options =
 
 async function openStore(options = {}) {
   if (options.dbPath === false) {
+    return null;
+  }
+
+  let createStateStore;
+  try {
+    ({ createStateStore } = require('../state-store'));
+  } catch (error) {
+    const missingBundledDependency = error?.code === 'MODULE_NOT_FOUND'
+      && /(?:sql\.js|ajv)/i.test(String(error.message || ''));
+    if (!missingBundledDependency) throw error;
+    if (!options.silent) {
+      process.stderr.write(
+        `[ECC] Local coordination state is disabled because an optional runtime dependency is unavailable: ${error.message}\n`
+      );
+    }
     return null;
   }
 

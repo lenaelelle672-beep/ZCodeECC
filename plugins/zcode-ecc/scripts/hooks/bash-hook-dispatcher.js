@@ -124,7 +124,7 @@ function runHooks(rawInput, hooks) {
   let currentRaw = rawInput;
   // Track whether a sub-hook deliberately produced stdout (a string or
   // {stdout}) versus currentRaw still being the untouched input event.
-  // Echoing the unmodified input event back to stdout fails ZCode's
+  // Echoing the unmodified input event back to stdout fails Claude Code's
   // hook-output JSON schema validation ("(root): Invalid input"), so in the
   // pass-through case we must emit nothing instead.
   let rawModified = false;

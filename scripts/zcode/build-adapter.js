@@ -15,11 +15,25 @@ const {
 } = require('./transforms');
 
 const GENERATED_MARKER = '.generated-by-zcode-ecc';
+const GENERATED_MARKER_SCHEMA_VERSION = 1;
+const GENERATED_MARKER_OWNER = 'scripts/zcode/build-adapter.js';
 const ZCODE_WORKSPACE_ROOT = '.zcode';
 const ZCODE_PLUGIN_ROOT = path.join('plugins', 'zcode-ecc');
-const TEXT_EXTENSIONS = new Set([
+const DOCUMENT_EXTENSIONS = new Set(['.md', '.mdx', '.txt']);
+const SOURCE_TEXT_EXTENSIONS = new Set([
   '.cfg', '.cjs', '.ini', '.js', '.json', '.jsx', '.md', '.mdx', '.mjs',
   '.ps1', '.py', '.sh', '.toml', '.ts', '.tsx', '.txt', '.yaml', '.yml',
+]);
+const RUNTIME_ROOT_SCRIPTS = Object.freeze([
+  'auto-update.js',
+  'github-coordination.js',
+  'harness-audit.js',
+  'install-apply.js',
+  'install-plan.js',
+  'orchestrate-worktrees.js',
+  'plan-canvas.js',
+  'setup-package-manager.js',
+  'skills-health.js',
 ]);
 const SUPPORTED_HOOK_EVENTS = new Set([
   'SessionStart',
@@ -76,7 +90,202 @@ function assertSafeOutputRoot(outputRoot) {
   if (resolved === path.parse(resolved).root) {
     throw new Error('Refusing to generate ZCode adapter at a filesystem root');
   }
+  const home = path.resolve(os.homedir());
+  const zcodeHome = path.join(home, '.zcode');
+  if (resolved === home) {
+    throw new Error('Refusing to generate ZCode adapter directly into the user home');
+  }
+  if (resolved === zcodeHome || isInside(resolved, zcodeHome)) {
+    throw new Error('Refusing to generate ZCode adapter inside the live ~/.zcode directory');
+  }
+  if (fs.existsSync(resolved) && fs.lstatSync(resolved).isSymbolicLink()) {
+    throw new Error(`Refusing to generate through a symlinked output root: ${resolved}`);
+  }
   return resolved;
+}
+
+function isInside(candidate, root) {
+  const relative = path.relative(root, candidate);
+  return relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative);
+}
+
+function normalizeOwnedPath(relativePath) {
+  const normalized = path.normalize(String(relativePath || ''));
+  if (!normalized || normalized === '.' || path.isAbsolute(normalized)) {
+    throw new Error(`Invalid generated path: ${relativePath}`);
+  }
+  const segments = normalized.split(path.sep);
+  if (segments.includes('..')) {
+    throw new Error(`Generated path escapes its owned root: ${relativePath}`);
+  }
+  return normalized;
+}
+
+function lstatIfExists(targetPath) {
+  try {
+    return fs.lstatSync(targetPath);
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+function assertNoSymlinkComponents(root, relativePath = '') {
+  const normalized = relativePath ? normalizeOwnedPath(relativePath) : '';
+  let current = root;
+  let stat = lstatIfExists(current);
+  if (stat?.isSymbolicLink()) {
+    throw new Error(`Refusing to follow generated-output symlink: ${current}`);
+  }
+  for (const segment of normalized ? normalized.split(path.sep) : []) {
+    current = path.join(current, segment);
+    stat = lstatIfExists(current);
+    if (!stat) break;
+    if (stat.isSymbolicLink()) {
+      throw new Error(`Refusing to follow generated-output symlink: ${current}`);
+    }
+  }
+}
+
+function assertNoSymlinksInTree(root) {
+  if (!fs.existsSync(root)) return;
+  function visit(current) {
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const target = path.join(current, entry.name);
+      if (entry.isSymbolicLink()) {
+        throw new Error(`Refusing generated-output symlink: ${target}`);
+      }
+      if (entry.isDirectory()) visit(target);
+    }
+  }
+  visit(root);
+}
+
+function generatedInventory(root) {
+  return listFiles(root)
+    .filter(relativePath => relativePath !== GENERATED_MARKER)
+    .map(relativePath => relativePath.split(path.sep).join('/'))
+    .sort();
+}
+
+function markerPayload(files) {
+  return {
+    schemaVersion: GENERATED_MARKER_SCHEMA_VERSION,
+    owner: GENERATED_MARKER_OWNER,
+    files,
+  };
+}
+
+function readGeneratedMarker(targetRoot) {
+  const markerPath = path.join(targetRoot, GENERATED_MARKER);
+  if (!fs.existsSync(markerPath)) {
+    throw new Error(`Refusing to modify non-generated directory: ${targetRoot}`);
+  }
+  assertNoSymlinkComponents(targetRoot, GENERATED_MARKER);
+  const raw = fs.readFileSync(markerPath, 'utf8').trim();
+  if (raw === GENERATED_MARKER_OWNER) {
+    return { legacy: true, files: [] };
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error(`Refusing malformed generated marker: ${markerPath}`);
+  }
+  if (
+    parsed?.schemaVersion !== GENERATED_MARKER_SCHEMA_VERSION
+    || parsed?.owner !== GENERATED_MARKER_OWNER
+    || !Array.isArray(parsed?.files)
+  ) {
+    throw new Error(`Refusing unrecognized generated marker: ${markerPath}`);
+  }
+  return {
+    legacy: false,
+    files: parsed.files.map(normalizeOwnedPath),
+  };
+}
+
+function pruneOwnedParents(root, ownedFiles) {
+  const directories = new Set();
+  for (const relativeFile of ownedFiles) {
+    let current = path.dirname(normalizeOwnedPath(relativeFile));
+    while (current && current !== '.') {
+      directories.add(current);
+      current = path.dirname(current);
+    }
+  }
+  const deepestFirst = [...directories]
+    .sort((left, right) => right.split(path.sep).length - left.split(path.sep).length);
+  for (const relativePath of deepestFirst) {
+    assertNoSymlinkComponents(root, relativePath);
+    const target = path.join(root, relativePath);
+    if (fs.existsSync(target) && fs.lstatSync(target).isDirectory() && fs.readdirSync(target).length === 0) {
+      fs.rmdirSync(target);
+    }
+  }
+}
+
+function syncGeneratedDirectory(stagedRoot, outputRoot, relativePath) {
+  const targetRoot = path.join(outputRoot, relativePath);
+  assertNoSymlinkComponents(outputRoot, relativePath);
+  let previous = { legacy: false, files: [] };
+  if (fs.existsSync(targetRoot)) {
+    if (!fs.lstatSync(targetRoot).isDirectory()) {
+      throw new Error(`Refusing to replace non-directory generated target: ${targetRoot}`);
+    }
+    previous = readGeneratedMarker(targetRoot);
+  } else {
+    fs.mkdirSync(targetRoot, { recursive: true });
+  }
+
+  const nextFiles = generatedInventory(stagedRoot);
+  const nextSet = new Set(nextFiles.map(normalizeOwnedPath));
+  const removedFiles = [];
+  for (const previousPath of previous.files) {
+    if (nextSet.has(previousPath)) continue;
+    assertNoSymlinkComponents(targetRoot, previousPath);
+    const stalePath = path.join(targetRoot, previousPath);
+    if (!fs.existsSync(stalePath)) continue;
+    const stat = fs.lstatSync(stalePath);
+    if (!stat.isFile()) {
+      throw new Error(`Refusing to remove non-file generated path: ${stalePath}`);
+    }
+    fs.unlinkSync(stalePath);
+    removedFiles.push(previousPath);
+  }
+
+  for (const relativeFile of nextFiles) {
+    const normalized = normalizeOwnedPath(relativeFile);
+    assertNoSymlinkComponents(targetRoot, normalized);
+    const sourcePath = path.join(stagedRoot, normalized);
+    const destinationPath = path.join(targetRoot, normalized);
+    if (fs.existsSync(destinationPath) && !fs.lstatSync(destinationPath).isFile()) {
+      throw new Error(`Refusing to replace non-file generated path: ${destinationPath}`);
+    }
+    fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
+    fs.copyFileSync(sourcePath, destinationPath);
+    fs.chmodSync(destinationPath, fs.statSync(sourcePath).mode);
+  }
+  pruneOwnedParents(targetRoot, removedFiles);
+  writeJson(path.join(targetRoot, GENERATED_MARKER), markerPayload(nextFiles));
+}
+
+function retireGeneratedDirectory(outputRoot, relativePath) {
+  const targetRoot = path.join(outputRoot, relativePath);
+  if (!fs.existsSync(targetRoot)) return;
+  assertNoSymlinkComponents(outputRoot, relativePath);
+  const previous = readGeneratedMarker(targetRoot);
+  for (const relativeFile of previous.files) {
+    assertNoSymlinkComponents(targetRoot, relativeFile);
+    const targetPath = path.join(targetRoot, relativeFile);
+    if (fs.existsSync(targetPath) && fs.lstatSync(targetPath).isFile()) fs.unlinkSync(targetPath);
+  }
+  pruneOwnedParents(targetRoot, previous.files);
+  const remaining = fs.readdirSync(targetRoot).filter(name => name !== GENERATED_MARKER);
+  if (remaining.length === 0 && !previous.legacy) {
+    fs.unlinkSync(path.join(targetRoot, GENERATED_MARKER));
+    fs.rmdirSync(targetRoot);
+  }
 }
 
 function prepareGeneratedDirectory(outputRoot, relativePath) {
@@ -112,6 +321,21 @@ function copyRawTree(sourceRoot, destinationRoot, options = {}) {
     const destinationPath = path.join(destinationRoot, relativePath);
     const stat = fs.statSync(sourcePath);
     fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
+    if (SOURCE_TEXT_EXTENSIONS.has(path.extname(relativePath).toLowerCase())) {
+      writeText(destinationPath, fs.readFileSync(sourcePath, 'utf8'), stat.mode);
+    } else {
+      fs.copyFileSync(sourcePath, destinationPath);
+      fs.chmodSync(destinationPath, stat.mode);
+    }
+  }
+}
+
+function copyRawFile(sourcePath, destinationPath) {
+  fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
+  const stat = fs.statSync(sourcePath);
+  if (SOURCE_TEXT_EXTENSIONS.has(path.extname(sourcePath).toLowerCase())) {
+    writeText(destinationPath, fs.readFileSync(sourcePath, 'utf8'), stat.mode);
+  } else {
     fs.copyFileSync(sourcePath, destinationPath);
     fs.chmodSync(destinationPath, stat.mode);
   }
@@ -124,17 +348,79 @@ function copyAdaptedTree(sourceRoot, destinationRoot) {
     const extension = path.extname(relativePath).toLowerCase();
     const stat = fs.statSync(sourcePath);
     fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
-    if (TEXT_EXTENSIONS.has(extension)) {
+    if (DOCUMENT_EXTENSIONS.has(extension)) {
       writeText(
         destinationPath,
         transformHarnessText(fs.readFileSync(sourcePath, 'utf8')),
         stat.mode
       );
+    } else if (SOURCE_TEXT_EXTENSIONS.has(extension)) {
+      writeText(destinationPath, fs.readFileSync(sourcePath, 'utf8'), stat.mode);
     } else {
       fs.copyFileSync(sourcePath, destinationPath);
       fs.chmodSync(destinationPath, stat.mode);
     }
   }
+}
+
+const SEMANTIC_LIMIT_PATTERNS = Object.freeze([
+  { pattern: /\bclaude\s+plugin\b/i, reason: 'Claude plugin lifecycle commands require a ZCode-specific route.' },
+  { pattern: /\bclaude\s+(?:-p|--print|--model)\b/i, reason: 'Claude CLI subprocess examples are not ZCode CLI equivalents.' },
+  { pattern: /--mode\s+claude-plugin\b/i, reason: 'Claude install scopes and hook profiles do not map to ZCode.' },
+  { pattern: /\b(?:TaskOutput|AskUserQuestion|run_in_background)\b/, reason: 'The workflow names harness-only orchestration tools that ZCode does not expose with the same contract.' },
+  { pattern: /\bCLAUDECODE\b/, reason: 'The bundled runtime contains a Claude-specific subprocess contract.' },
+]);
+
+function sourceTreeText(root) {
+  return listFiles(root).map(relativePath => {
+    const extension = path.extname(relativePath).toLowerCase();
+    if (!SOURCE_TEXT_EXTENSIONS.has(extension)) return '';
+    return fs.readFileSync(path.join(root, relativePath), 'utf8');
+  }).join('\n');
+}
+
+function nonDocumentAssetText(root) {
+  return listFiles(root).map(relativePath => {
+    const extension = path.extname(relativePath).toLowerCase();
+    if (!SOURCE_TEXT_EXTENSIONS.has(extension) || DOCUMENT_EXTENSIONS.has(extension)) return '';
+    return fs.readFileSync(path.join(root, relativePath), 'utf8');
+  }).join('\n');
+}
+
+function semanticLimits(source) {
+  return SEMANTIC_LIMIT_PATTERNS
+    .filter(entry => entry.pattern.test(source))
+    .map(entry => entry.reason);
+}
+
+function skillSemanticLimits(root) {
+  const limits = semanticLimits(sourceTreeText(root));
+  if (/\bCLAUDE_(?:PLUGIN_ROOT|PROJECT_DIR|CONFIG_DIR)\b|\.claude(?:[/\\]|["'\s,)]|$)/m.test(nonDocumentAssetText(root))) {
+    limits.push('A bundled non-Markdown asset retains a Claude-specific runtime or storage contract and is shipped unchanged to avoid unsafe textual code rewriting.');
+  }
+  return [...new Set(limits)];
+}
+
+function commandSemanticLimits(source) {
+  const limits = semanticLimits(source);
+  if (/scripts\/github-coordination\.js\b/.test(source)) {
+    limits.push('The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies.');
+  }
+  return [...new Set(limits)];
+}
+
+function addCompatibilityBoundary(markdown, reasons) {
+  if (reasons.length === 0) return markdown;
+  const notice = `> ZCode compatibility boundary: ${reasons.join(' ')}`;
+  return markdown.replace(
+    /^(---\r?\n[\s\S]*?\r?\n---\r?\n)/,
+    `$1\n${notice}\n`
+  );
+}
+
+function overridePath(repoRoot, kind, id, fileName) {
+  const candidate = path.join(repoRoot, 'scripts', 'zcode', 'overrides', kind, id, fileName);
+  return fs.existsSync(candidate) ? candidate : null;
 }
 
 function buildSkills(repoRoot, zcodeRoot, artifacts) {
@@ -148,18 +434,28 @@ function buildSkills(repoRoot, zcodeRoot, artifacts) {
     copyAdaptedTree(sourceDir, destinationDir);
     const sourceSkillPath = path.join(sourceDir, 'SKILL.md');
     const targetSkillPath = path.join(destinationDir, 'SKILL.md');
+    const semanticOverride = overridePath(repoRoot, 'skills', skillId, 'SKILL.md');
+    const limits = semanticOverride ? [] : skillSemanticLimits(sourceDir);
+    const skillSource = semanticOverride || sourceSkillPath;
     writeText(
       targetSkillPath,
-      adaptSkillMarkdown(fs.readFileSync(sourceSkillPath, 'utf8'), skillId),
-      fs.statSync(sourceSkillPath).mode
+      addCompatibilityBoundary(
+        adaptSkillMarkdown(fs.readFileSync(skillSource, 'utf8'), skillId),
+        limits
+      ),
+      fs.statSync(skillSource).mode
     );
     artifacts.push({
       kind: 'skills',
       source: path.posix.join('skills', skillId, 'SKILL.md'),
       target: path.posix.join('.zcode', 'skills', skillId, 'SKILL.md'),
       targetType: 'file',
-      status: 'adapted',
-      note: 'Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode.',
+      status: limits.length > 0 ? 'limited' : 'adapted',
+      note: semanticOverride
+        ? 'Uses a reviewed ZCode-native semantic override instead of the Claude plugin workflow.'
+        : limits.length > 0
+          ? `Frontmatter and paths are projected, but semantic limits remain: ${limits.join(' ')}`
+          : 'Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode.',
     });
   }
 }
@@ -255,14 +551,26 @@ function buildCommands(repoRoot, zcodeRoot, artifacts) {
   for (const fileName of files) {
     const sourcePath = path.join(sourceRoot, fileName);
     const targetPath = path.join(destinationRoot, fileName);
-    writeText(targetPath, adaptCommandMarkdown(fs.readFileSync(sourcePath, 'utf8')));
+    const commandId = path.basename(fileName, '.md');
+    const semanticOverride = overridePath(repoRoot, 'commands', commandId, fileName);
+    const commandSource = semanticOverride || sourcePath;
+    const sourceText = fs.readFileSync(commandSource, 'utf8');
+    const limits = semanticOverride ? [] : commandSemanticLimits(fs.readFileSync(sourcePath, 'utf8'));
+    writeText(
+      targetPath,
+      addCompatibilityBoundary(adaptCommandMarkdown(sourceText), limits)
+    );
     artifacts.push({
       kind: 'commands',
       source: path.posix.join('commands', fileName),
       target: path.posix.join('.zcode', 'commands', fileName),
       targetType: 'file',
-      status: 'adapted',
-      note: 'Uses only ZCode command frontmatter keys and ZCode harness paths.',
+      status: limits.length > 0 ? 'limited' : 'adapted',
+      note: semanticOverride
+        ? 'Uses a reviewed ZCode-native semantic override.'
+        : limits.length > 0
+          ? `Frontmatter and paths are projected, but semantic limits remain: ${limits.join(' ')}`
+          : 'Uses only ZCode command frontmatter keys and ZCode harness paths.',
     });
   }
 }
@@ -312,22 +620,30 @@ function buildHooks(repoRoot, zcodeRoot, artifacts) {
         continue;
       }
 
-      const targetEvent = sourceEvent === 'PreCompact' ? 'SessionStart' : sourceEvent;
+      if (sourceEvent === 'PreCompact') {
+        artifacts.push({
+          kind: 'hooks',
+          source,
+          sourceEvent,
+          target: '.zcode/hooks/hooks.json#Stop/stop:session-end',
+          targetType: 'hook',
+          targetEvent: 'Stop',
+          status: 'limited',
+          note: 'ZCode CLI 0.16.1 has no PreCompact event. Existing Stop persistence preserves the summary intent when Stop runs, but cannot provide equivalent pre-compaction timing.',
+        });
+        continue;
+      }
+
+      const targetEvent = sourceEvent;
       if (!SUPPORTED_HOOK_EVENTS.has(targetEvent)) {
         throw new Error(`No ZCode mapping for hook event ${sourceEvent}`);
       }
-      const matcher = sourceEvent === 'PreCompact'
-        ? 'compact'
-        : normalizeHookMatcher(group.matcher);
+      const matcher = normalizeHookMatcher(group.matcher);
       if (!targetHooks[targetEvent]) targetHooks[targetEvent] = [];
       targetHooks[targetEvent].push(bridgeHook(sourceEvent, group, targetEvent, matcher));
 
       let status = 'adapted';
       const notes = ['Runs through a bridge that sanitizes stdout to ZCode hook output fields.'];
-      if (sourceEvent === 'PreCompact') {
-        status = 'limited';
-        notes.push('ZCode has no PreCompact event, so this runs on SessionStart(compact) after compaction.');
-      }
       if (hasAsync) {
         status = 'limited';
         notes.push('ZCode ignores async; this hook runs inline.');
@@ -469,20 +785,26 @@ function buildPluginBundle(repoRoot, outputRoot, zcodeRoot, compatibility, sourc
     copyRawTree(path.join(zcodeRoot, component), path.join(pluginRoot, component));
   }
 
-  copyAdaptedTree(path.join(repoRoot, 'scripts', 'hooks'), path.join(pluginRoot, 'scripts', 'hooks'));
-  copyAdaptedTree(path.join(repoRoot, 'scripts', 'lib'), path.join(pluginRoot, 'scripts', 'lib'));
-  copyRawTree(
-    path.join(repoRoot, 'scripts', 'zcode'),
-    path.join(pluginRoot, 'scripts', 'zcode'),
-    { exclude: ['build-adapter.js', 'frontmatter.js', 'transforms.js'] }
+  copyRawTree(path.join(repoRoot, 'scripts', 'hooks'), path.join(pluginRoot, 'scripts', 'hooks'));
+  copyRawTree(path.join(repoRoot, 'scripts', 'lib'), path.join(pluginRoot, 'scripts', 'lib'));
+  copyRawFile(
+    path.join(repoRoot, 'scripts', 'zcode', 'hook-bridge.js'),
+    path.join(pluginRoot, 'scripts', 'zcode', 'hook-bridge.js')
   );
+  for (const scriptName of RUNTIME_ROOT_SCRIPTS) {
+    copyRawFile(
+      path.join(repoRoot, 'scripts', scriptName),
+      path.join(pluginRoot, 'scripts', scriptName)
+    );
+  }
   copyRawTree(path.join(repoRoot, 'config'), path.join(pluginRoot, 'config'));
+  copyRawTree(path.join(repoRoot, 'manifests'), path.join(pluginRoot, 'manifests'));
   copyRawTree(path.join(repoRoot, 'schemas'), path.join(pluginRoot, 'schemas'));
   fs.copyFileSync(path.join(repoRoot, 'package.json'), path.join(pluginRoot, 'package.json'));
   fs.copyFileSync(path.join(repoRoot, 'VERSION'), path.join(pluginRoot, 'VERSION'));
   writeJson(
     path.join(pluginRoot, 'runtime', 'canonical-hooks.json'),
-    JSON.parse(transformHarnessText(fs.readFileSync(path.join(repoRoot, 'hooks', 'hooks.json'), 'utf8')))
+    readJson(path.join(repoRoot, 'hooks', 'hooks.json'))
   );
 
   const bundleCompatibility = {
@@ -505,7 +827,7 @@ function countArtifacts(artifacts) {
   );
 }
 
-function buildZcodeAdapter(options = {}) {
+function buildZcodeAdapterClean(options = {}) {
   const repoRoot = path.resolve(options.repoRoot || path.join(__dirname, '../..'));
   const outputRoot = assertSafeOutputRoot(options.outputRoot || repoRoot);
   const packageJson = readJson(path.join(repoRoot, 'package.json'));
@@ -552,13 +874,68 @@ function buildZcodeAdapter(options = {}) {
   return { outputRoot, sourceCounts, artifactCount: artifacts.length };
 }
 
+function preflightGeneratedTarget(outputRoot, relativePath) {
+  const targetRoot = path.join(outputRoot, relativePath);
+  assertNoSymlinkComponents(outputRoot, relativePath);
+  if (!fs.existsSync(targetRoot)) return;
+  if (!fs.lstatSync(targetRoot).isDirectory()) {
+    throw new Error(`Refusing to replace non-directory generated target: ${targetRoot}`);
+  }
+  readGeneratedMarker(targetRoot);
+  assertNoSymlinksInTree(targetRoot);
+}
+
+function buildZcodeAdapter(options = {}) {
+  const repoRoot = path.resolve(options.repoRoot || path.join(__dirname, '../..'));
+  const outputRoot = assertSafeOutputRoot(options.outputRoot || repoRoot);
+  const stagingRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'zcode-ecc-build-'));
+  try {
+    const result = buildZcodeAdapterClean({ repoRoot, outputRoot: stagingRoot });
+    if (fs.existsSync(outputRoot) && !fs.lstatSync(outputRoot).isDirectory()) {
+      throw new Error(`ZCode adapter output root is not a directory: ${outputRoot}`);
+    }
+    fs.mkdirSync(outputRoot, { recursive: true });
+
+    for (const relativePath of [ZCODE_WORKSPACE_ROOT, ZCODE_PLUGIN_ROOT, '.zcode-plugin']) {
+      preflightGeneratedTarget(outputRoot, relativePath);
+    }
+    syncGeneratedDirectory(
+      path.join(stagingRoot, ZCODE_WORKSPACE_ROOT),
+      outputRoot,
+      ZCODE_WORKSPACE_ROOT
+    );
+    syncGeneratedDirectory(
+      path.join(stagingRoot, ZCODE_PLUGIN_ROOT),
+      outputRoot,
+      ZCODE_PLUGIN_ROOT
+    );
+    retireGeneratedDirectory(outputRoot, '.zcode-plugin');
+    return { ...result, outputRoot };
+  } finally {
+    fs.rmSync(stagingRoot, { recursive: true, force: true });
+  }
+}
+
 function compareGeneratedTrees(expectedRoot, actualRoot) {
   const drift = [];
-  for (const generatedRoot of [ZCODE_WORKSPACE_ROOT, '.zcode-plugin', ZCODE_PLUGIN_ROOT]) {
+  for (const generatedRoot of [ZCODE_WORKSPACE_ROOT, ZCODE_PLUGIN_ROOT]) {
     const expectedDir = path.join(expectedRoot, generatedRoot);
     const actualDir = path.join(actualRoot, generatedRoot);
-    const expectedFiles = listFiles(expectedDir).map(file => path.join(generatedRoot, file));
-    const actualFiles = listFiles(actualDir).map(file => path.join(generatedRoot, file));
+    if (!fs.existsSync(actualDir)) {
+      drift.push(generatedRoot.split(path.sep).join('/'));
+      continue;
+    }
+    let expectedMarker;
+    let actualMarker;
+    try {
+      expectedMarker = readGeneratedMarker(expectedDir);
+      actualMarker = readGeneratedMarker(actualDir);
+    } catch {
+      drift.push(path.posix.join(generatedRoot.split(path.sep).join('/'), GENERATED_MARKER));
+      continue;
+    }
+    const expectedFiles = expectedMarker.files.map(file => path.join(generatedRoot, file));
+    const actualFiles = actualMarker.files.map(file => path.join(generatedRoot, file));
     const allFiles = [...new Set([...expectedFiles, ...actualFiles])].sort();
     for (const relativePath of allFiles) {
       const expectedPath = path.join(expectedRoot, relativePath);
@@ -570,6 +947,15 @@ function compareGeneratedTrees(expectedRoot, actualRoot) {
       if (!fs.readFileSync(expectedPath).equals(fs.readFileSync(actualPath))) {
         drift.push(relativePath.split(path.sep).join('/'));
       }
+    }
+  }
+  const legacyRoot = path.join(actualRoot, '.zcode-plugin');
+  if (fs.existsSync(legacyRoot)) {
+    try {
+      const marker = readGeneratedMarker(legacyRoot);
+      if (marker.files.length > 0) drift.push('.zcode-plugin');
+    } catch {
+      drift.push('.zcode-plugin');
     }
   }
   return drift;

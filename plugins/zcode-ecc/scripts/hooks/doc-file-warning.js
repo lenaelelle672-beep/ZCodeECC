@@ -22,7 +22,7 @@ const MAX_STDIN = 1024 * 1024;
 const ADHOC_FILENAMES = /^(NOTES|TODO|SCRATCH|TEMP|DRAFT|BRAINSTORM|SPIKE|DEBUG|WIP)\.(md|txt)$/;
 
 // Structured directories where even ad-hoc names are intentional
-const STRUCTURED_DIRS = /(^|\/)(docs|\.zcode|\.github|commands|skills|benchmarks|templates|\.history|memory)\//;
+const STRUCTURED_DIRS = /(^|\/)(docs|\.claude|\.github|commands|skills|benchmarks|templates|\.history|memory)\//;
 
 function isSuspiciousDocPath(filePath) {
   const normalized = filePath.replace(/\\/g, '/');
@@ -61,7 +61,7 @@ function run(inputOrRaw, _options = {}) {
       additionalContext: [
         '[Hook] WARNING: Ad-hoc documentation filename detected',
         `[Hook] File: ${filePath}`,
-        '[Hook] Consider using a structured path (e.g. docs/, .zcode/, skills/, .github/, benchmarks/, templates/)',
+        '[Hook] Consider using a structured path (e.g. docs/, .claude/, skills/, .github/, benchmarks/, templates/)',
       ],
     };
   }

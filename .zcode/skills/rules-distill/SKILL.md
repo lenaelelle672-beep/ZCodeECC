@@ -3,6 +3,8 @@ name: rules-distill
 description: "Scan skills to extract cross-cutting principles and distill them into rules — append, revise, or create new rule files"
 ---
 
+> ZCode compatibility boundary: A bundled non-Markdown asset retains a Claude-specific runtime or storage contract and is shipped unchanged to avoid unsafe textual code rewriting.
+
 # Rules Distill
 
 Scan installed skills, extract cross-cutting principles that appear in multiple skills, and distill them into rules — appending to existing rule files, revising outdated content, or creating new rule files.

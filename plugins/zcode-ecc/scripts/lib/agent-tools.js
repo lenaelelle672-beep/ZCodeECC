@@ -63,7 +63,7 @@ function splitTopLevelToolList(value) {
 /**
  * Normalize Claude agent frontmatter tools to the array shape used internally.
  *
- * ZCode expects tools to be a comma-separated scalar. Flow sequences are
+ * Claude Code expects tools to be a comma-separated scalar. Flow sequences are
  * still accepted here so ECC can read legacy or harness-adapted agent files.
  */
 function normalizeAgentTools(value) {

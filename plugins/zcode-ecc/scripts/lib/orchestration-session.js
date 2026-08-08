@@ -264,7 +264,7 @@ function resolveSnapshotTarget(targetPath, cwd = process.cwd()) {
 
   return {
     sessionName: targetPath,
-    coordinationDir: path.join(cwd, '.zcode', 'orchestration', targetPath),
+    coordinationDir: path.join(cwd, '.claude', 'orchestration', targetPath),
     repoRoot: cwd,
     targetType: 'session'
   };

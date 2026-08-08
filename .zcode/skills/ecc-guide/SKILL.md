@@ -30,8 +30,8 @@ node scripts/ci/catalog.js --json
 find skills -maxdepth 2 -name SKILL.md | sort
 find commands -maxdepth 1 -name '*.md' | sort
 find agents -maxdepth 1 -name '*.md' | sort
-node scripts/install-plan.js --list-profiles
-node scripts/install-plan.js --list-components --json
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/install-plan.js" --list-profiles
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/install-plan.js" --list-components --json
 ```
 
 Use the smallest set of reads needed for the user's question.
@@ -104,16 +104,16 @@ find skills -maxdepth 2 -name SKILL.md | sort
 Use managed install paths:
 
 ```bash
-node scripts/install-plan.js --list-profiles
-node scripts/install-plan.js --profile minimal --target claude --json
-node scripts/install-apply.js --profile minimal --target claude --dry-run
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/install-plan.js" --list-profiles
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/install-plan.js" --profile minimal --target claude --json
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/install-apply.js" --profile minimal --target claude --dry-run
 ```
 
 For specific skill installs:
 
 ```bash
-node scripts/install-plan.js --skills <skill-id> --target claude --json
-node scripts/install-apply.js --skills <skill-id> --target claude --dry-run
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/install-plan.js" --skills <skill-id> --target claude --json
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/install-apply.js" --skills <skill-id> --target claude --dry-run
 ```
 
 Warn users not to stack plugin installs and full manual/profile installs unless they intentionally want duplicate surfaces.

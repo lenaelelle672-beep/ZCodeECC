@@ -2,12 +2,14 @@
 description: "Sweep blocked epic issues and reopen anything whose dependencies are closed."
 ---
 
+> ZCode compatibility boundary: The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies.
+
 # /epic-unblock
 
 Sweep blocked epics whose declared dependencies are complete.
 
 ```bash
-node scripts/github-coordination.js unblock --repo <owner/repo>
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/github-coordination.js" unblock --repo <owner/repo>
 ```
 
 What this does:

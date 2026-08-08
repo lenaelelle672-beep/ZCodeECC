@@ -2,9 +2,10 @@
 /**
  * LLM-powered session summary generator
  *
- * Uses `claude -p` (ZCode CLI) to generate rich, contextual session
- * summaries from JSONL transcripts. Requires no API key — reuses ZCode's
- * own authentication.
+ * Uses the active harness CLI to generate rich, contextual session summaries
+ * from JSONL transcripts. Claude receives the prompt on stdin. ZCode receives
+ * a mode-0600 temporary attachment so conversation text is not exposed in the
+ * process argument list.
  *
  * Recursion guard: sets ECC_SKIP_LLM_SUMMARY=1 in subprocess env so any Stop
  * hooks fired by the subprocess do NOT re-enter LLM summarization.
@@ -14,13 +15,60 @@
 
 const { spawnSync } = require('child_process');
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 const MAX_TRANSCRIPT_CHARS = 7000;
 const MAX_TURNS = 25;
 const LLM_TIMEOUT_MS = 90000;
+const DEFAULT_ZCODE_CLI = '/Applications/ZCode.app/Contents/Resources/glm/zcode.cjs';
 
-function getLLMModel() {
-  return process.env.ECC_LLM_SUMMARY_MODEL || 'haiku';
+function getLLMModel(env = process.env) {
+  return env.ECC_LLM_SUMMARY_MODEL || 'haiku';
+}
+
+function isZcodeRuntime(env = process.env) {
+  return String(env.ECC_HARNESS || '').toLowerCase() === 'zcode'
+    || Boolean(env.ZCODE_PLUGIN_ROOT)
+    || Boolean(env.ZCODE_HOOK_EVENT_NAME);
+}
+
+function resolveSummaryInvocation(options = {}) {
+  const env = options.env || process.env;
+  if (!isZcodeRuntime(env)) {
+    return {
+      command: 'claude',
+      args: ['--model', getLLMModel(env), '-p'],
+      input: options.prompt || '',
+      harness: 'claude',
+    };
+  }
+
+  if (!options.promptFile) {
+    throw new Error('ZCode summary invocation requires a private prompt attachment');
+  }
+  const existsSync = options.existsSync || fs.existsSync;
+  const configuredCli = env.ECC_ZCODE_CLI || env.ZCODE_CLI;
+  const cliPath = configuredCli
+    || (existsSync(DEFAULT_ZCODE_CLI) ? DEFAULT_ZCODE_CLI : 'zcode');
+  const scriptCli = /\.(?:cjs|mjs|js)$/i.test(cliPath);
+  return {
+    command: scriptCli ? (options.execPath || process.execPath) : cliPath,
+    args: [
+      ...(scriptCli ? [cliPath] : []),
+      '--prompt',
+      'Summarize the attached session-summary-input.md exactly as instructed in that file.',
+      '--attach',
+      options.promptFile,
+      '--mode',
+      'plan',
+      '--max-turns',
+      '1',
+      '--no-color',
+    ],
+    input: undefined,
+    harness: 'zcode',
+  };
 }
 
 function getContextThreshold() {
@@ -74,7 +122,7 @@ function extractConversationText(transcriptPath) {
           .replace(/\n+/g, ' ')
           .trim();
         if (textParts) {
-          turns.push({ role: 'Claude', text: textParts.slice(0, 600) });
+          turns.push({ role: 'Assistant', text: textParts.slice(0, 600) });
         }
       }
     } catch {
@@ -106,17 +154,18 @@ function getContextRemainingPct(transcriptPath) {
 }
 
 /**
- * Generate a session summary using `claude -p`.
+ * Generate a session summary using the active harness CLI.
  * Returns the summary string, or null on failure or when recursion guard is active.
  */
-function generateSessionSummary(transcriptPath) {
-  if (process.env.ECC_SKIP_LLM_SUMMARY) return null;
+function generateSessionSummary(transcriptPath, options = {}) {
+  const env = options.env || process.env;
+  if (env.ECC_SKIP_LLM_SUMMARY) return null;
 
   const conversation = extractConversationText(transcriptPath);
   if (!conversation) return null;
 
   const prompt = [
-    'Below is a conversation log from a ZCode coding session.',
+    'Below is a conversation log from a coding-agent session.',
     'Create a summary to help the next session quickly understand the context.',
     '',
     '## Prioritize including',
@@ -149,12 +198,28 @@ function generateSessionSummary(transcriptPath) {
     '(important context for the next session)'
   ].join('\n');
 
+  let temporaryRoot = null;
   try {
-    const result = spawnSync('claude', ['--model', getLLMModel(), '-p'], {
-      input: prompt,
+    let promptFile = null;
+    if (isZcodeRuntime(env)) {
+      temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'ecc-zcode-summary-'));
+      promptFile = path.join(temporaryRoot, 'session-summary-input.md');
+      fs.writeFileSync(promptFile, prompt, { encoding: 'utf8', mode: 0o600 });
+      fs.chmodSync(promptFile, 0o600);
+    }
+    const invocation = resolveSummaryInvocation({
+      env,
+      prompt,
+      promptFile,
+      existsSync: options.existsSync,
+      execPath: options.execPath,
+    });
+    const spawn = options.spawnSync || spawnSync;
+    const result = spawn(invocation.command, invocation.args, {
+      input: invocation.input,
       encoding: 'utf8',
       env: {
-        ...process.env,
+        ...env,
         CLAUDECODE: '',
         ECC_SKIP_LLM_SUMMARY: '1'
       },
@@ -170,7 +235,17 @@ function generateSessionSummary(transcriptPath) {
     return output || null;
   } catch {
     return null;
+  } finally {
+    if (temporaryRoot) fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }
 }
 
-module.exports = { generateSessionSummary, extractConversationText, getContextRemainingPct, getContextThreshold, getLLMModel };
+module.exports = {
+  extractConversationText,
+  generateSessionSummary,
+  getContextRemainingPct,
+  getContextThreshold,
+  getLLMModel,
+  isZcodeRuntime,
+  resolveSummaryInvocation,
+};

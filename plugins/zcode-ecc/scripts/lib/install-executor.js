@@ -358,7 +358,7 @@ function planClaudeLegacyInstall(context) {
   return planClaudeStyleLegacyInstall(context, {
     adapterId: 'claude',
     adapterRootInput: { homeDir: context.homeDir },
-    rulesDir: context.zcodeRulesDir || null
+    rulesDir: context.claudeRulesDir || null
   });
 }
 
@@ -549,7 +549,7 @@ function createLegacyInstallPlan(options = {}) {
     projectRoot,
     homeDir,
     languages: Array.isArray(options.languages) ? options.languages : [],
-    claudeRulesDir: options.zcodeRulesDir || process.env.CLAUDE_RULES_DIR || null
+    claudeRulesDir: options.claudeRulesDir || process.env.CLAUDE_RULES_DIR || null
   };
 
   let plan;

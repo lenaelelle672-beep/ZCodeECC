@@ -194,7 +194,7 @@ function buildContextSuggestion(transcriptPath, bucketFile, env) {
 }
 
 async function main() {
-  // ZCode passes hook input via stdin JSON; session_id is the
+  // Claude Code passes hook input via stdin JSON; session_id is the
   // canonical field (legacy env var, then 'default', as fallbacks) and
   // transcript_path points at the session transcript JSONL used by the
   // context-size signal.
@@ -243,7 +243,7 @@ async function main() {
     messages.push(`[StrategicCompact] ${count} tool calls - good checkpoint for /compact if context is stale`);
   }
 
-  // log() writes to stderr (debug log). Per the ZCode hooks guide,
+  // log() writes to stderr (debug log). Per the Claude Code hooks guide,
   // non-blocking PreToolUse stderr (exit 0) is only written to the debug log;
   // it does not reach the model. To inject a user-facing suggestion without
   // blocking the tool call, emit structured JSON to stdout with

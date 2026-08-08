@@ -571,7 +571,7 @@
       "target": ".zcode/commands/auto-update.md",
       "targetType": "file",
       "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "note": "Uses a reviewed ZCode-native semantic override."
     },
     {
       "kind": "commands",
@@ -635,63 +635,63 @@
       "target": ".zcode/commands/ecc-guide.md",
       "targetType": "file",
       "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "note": "Uses a reviewed ZCode-native semantic override."
     },
     {
       "kind": "commands",
       "source": "commands/epic-claim.md",
       "target": ".zcode/commands/epic-claim.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies."
     },
     {
       "kind": "commands",
       "source": "commands/epic-decompose.md",
       "target": ".zcode/commands/epic-decompose.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies."
     },
     {
       "kind": "commands",
       "source": "commands/epic-publish.md",
       "target": ".zcode/commands/epic-publish.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies."
     },
     {
       "kind": "commands",
       "source": "commands/epic-review.md",
       "target": ".zcode/commands/epic-review.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies."
     },
     {
       "kind": "commands",
       "source": "commands/epic-sync.md",
       "target": ".zcode/commands/epic-sync.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies."
     },
     {
       "kind": "commands",
       "source": "commands/epic-unblock.md",
       "target": ".zcode/commands/epic-unblock.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies."
     },
     {
       "kind": "commands",
       "source": "commands/epic-validate.md",
       "target": ".zcode/commands/epic-validate.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies."
     },
     {
       "kind": "commands",
@@ -938,40 +938,40 @@
       "source": "commands/multi-backend.md",
       "target": ".zcode/commands/multi-backend.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: The workflow names harness-only orchestration tools that ZCode does not expose with the same contract."
     },
     {
       "kind": "commands",
       "source": "commands/multi-execute.md",
       "target": ".zcode/commands/multi-execute.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: The workflow names harness-only orchestration tools that ZCode does not expose with the same contract."
     },
     {
       "kind": "commands",
       "source": "commands/multi-frontend.md",
       "target": ".zcode/commands/multi-frontend.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: The workflow names harness-only orchestration tools that ZCode does not expose with the same contract."
     },
     {
       "kind": "commands",
       "source": "commands/multi-plan.md",
       "target": ".zcode/commands/multi-plan.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: The workflow names harness-only orchestration tools that ZCode does not expose with the same contract."
     },
     {
       "kind": "commands",
       "source": "commands/multi-workflow.md",
       "target": ".zcode/commands/multi-workflow.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Uses only ZCode command frontmatter keys and ZCode harness paths."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: The workflow names harness-only orchestration tools that ZCode does not expose with the same contract."
     },
     {
       "kind": "commands",
@@ -1343,11 +1343,11 @@
       "kind": "hooks",
       "source": "hooks/hooks.json#PreCompact/pre:compact",
       "sourceEvent": "PreCompact",
-      "target": ".zcode/hooks/hooks.json#SessionStart/pre:compact",
+      "target": ".zcode/hooks/hooks.json#Stop/stop:session-end",
       "targetType": "hook",
-      "targetEvent": "SessionStart",
+      "targetEvent": "Stop",
       "status": "limited",
-      "note": "Runs through a bridge that sanitizes stdout to ZCode hook output fields. ZCode has no PreCompact event, so this runs on SessionStart(compact) after compaction."
+      "note": "ZCode CLI 0.16.1 has no PreCompact event. Existing Stop persistence preserves the summary intent when Stop runs, but cannot provide equivalent pre-compaction timing."
     },
     {
       "kind": "hooks",
@@ -2940,16 +2940,16 @@
       "source": "skills/autonomous-agent-harness/SKILL.md",
       "target": ".zcode/skills/autonomous-agent-harness/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: Claude CLI subprocess examples are not ZCode CLI equivalents."
     },
     {
       "kind": "skills",
       "source": "skills/autonomous-loops/SKILL.md",
       "target": ".zcode/skills/autonomous-loops/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: Claude CLI subprocess examples are not ZCode CLI equivalents."
     },
     {
       "kind": "skills",
@@ -3060,8 +3060,8 @@
       "source": "skills/ck/SKILL.md",
       "target": ".zcode/skills/ck/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: A bundled non-Markdown asset retains a Claude-specific runtime or storage contract and is shipped unchanged to avoid unsafe textual code rewriting."
     },
     {
       "kind": "skills",
@@ -3157,7 +3157,7 @@
       "target": ".zcode/skills/configure-ecc/SKILL.md",
       "targetType": "file",
       "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "note": "Uses a reviewed ZCode-native semantic override instead of the Claude plugin workflow."
     },
     {
       "kind": "skills",
@@ -3204,16 +3204,16 @@
       "source": "skills/continuous-learning-v2/SKILL.md",
       "target": ".zcode/skills/continuous-learning-v2/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: Claude CLI subprocess examples are not ZCode CLI equivalents. The bundled runtime contains a Claude-specific subprocess contract. A bundled non-Markdown asset retains a Claude-specific runtime or storage contract and is shipped unchanged to avoid unsafe textual code rewriting."
     },
     {
       "kind": "skills",
       "source": "skills/continuous-learning/SKILL.md",
       "target": ".zcode/skills/continuous-learning/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: A bundled non-Markdown asset retains a Claude-specific runtime or storage contract and is shipped unchanged to avoid unsafe textual code rewriting."
     },
     {
       "kind": "skills",
@@ -3356,8 +3356,8 @@
       "source": "skills/delivery-gate/SKILL.md",
       "target": ".zcode/skills/delivery-gate/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: A bundled non-Markdown asset retains a Claude-specific runtime or storage contract and is shipped unchanged to avoid unsafe textual code rewriting."
     },
     {
       "kind": "skills",
@@ -3636,8 +3636,8 @@
       "source": "skills/gan-style-harness/SKILL.md",
       "target": ".zcode/skills/gan-style-harness/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: Claude CLI subprocess examples are not ZCode CLI equivalents."
     },
     {
       "kind": "skills",
@@ -3812,8 +3812,8 @@
       "source": "skills/inherit-legacy-style/SKILL.md",
       "target": ".zcode/skills/inherit-legacy-style/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: The workflow names harness-only orchestration tools that ZCode does not expose with the same contract."
     },
     {
       "kind": "skills",
@@ -4204,8 +4204,8 @@
       "source": "skills/nanoclaw-repl/SKILL.md",
       "target": ".zcode/skills/nanoclaw-repl/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: Claude CLI subprocess examples are not ZCode CLI equivalents."
     },
     {
       "kind": "skills",
@@ -4396,8 +4396,8 @@
       "source": "skills/plankton-code-quality/SKILL.md",
       "target": ".zcode/skills/plankton-code-quality/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: Claude CLI subprocess examples are not ZCode CLI equivalents."
     },
     {
       "kind": "skills",
@@ -4652,8 +4652,8 @@
       "source": "skills/rules-distill/SKILL.md",
       "target": ".zcode/skills/rules-distill/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: A bundled non-Markdown asset retains a Claude-specific runtime or storage contract and is shipped unchanged to avoid unsafe textual code rewriting."
     },
     {
       "kind": "skills",
@@ -4772,8 +4772,8 @@
       "source": "skills/skill-comply/SKILL.md",
       "target": ".zcode/skills/skill-comply/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: Claude CLI subprocess examples are not ZCode CLI equivalents."
     },
     {
       "kind": "skills",
@@ -4788,8 +4788,8 @@
       "source": "skills/skill-stocktake/SKILL.md",
       "target": ".zcode/skills/skill-stocktake/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: A bundled non-Markdown asset retains a Claude-specific runtime or storage contract and is shipped unchanged to avoid unsafe textual code rewriting."
     },
     {
       "kind": "skills",
@@ -4972,8 +4972,8 @@
       "source": "skills/unified-memory/SKILL.md",
       "target": ".zcode/skills/unified-memory/SKILL.md",
       "targetType": "file",
-      "status": "adapted",
-      "note": "Frontmatter is reduced to ZCode-compatible name/description fields and harness paths are projected to ZCode."
+      "status": "limited",
+      "note": "Frontmatter and paths are projected, but semantic limits remain: Claude plugin lifecycle commands require a ZCode-specific route."
     },
     {
       "kind": "skills",

@@ -2,12 +2,14 @@
 description: "Break an epic into task children without creating task branches."
 ---
 
+> ZCode compatibility boundary: The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies.
+
 # /epic-decompose
 
 Reconcile the task breakdown for one epic issue.
 
 ```bash
-node scripts/github-coordination.js decompose <issue-number> --repo <owner/repo>
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/github-coordination.js" decompose <issue-number> --repo <owner/repo>
 ```
 
 What this does:

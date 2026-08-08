@@ -110,6 +110,7 @@ function runHookCommand(commandConfig, rawInput, pluginRoot, targetEvent = '') {
       CLAUDE_PLUGIN_ROOT: pluginRoot,
       ZCODE_PLUGIN_ROOT: pluginRoot,
       ECC_PLUGIN_ROOT: pluginRoot,
+      ECC_HARNESS: 'zcode',
       ECC_AGENT_DATA_HOME: resolveAgentDataHome(),
       CLAUDE_HOOK_EVENT_NAME: targetEvent,
       ZCODE_HOOK_EVENT_NAME: targetEvent,

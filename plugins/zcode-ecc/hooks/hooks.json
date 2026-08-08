@@ -132,22 +132,6 @@
     ],
     "SessionStart": [
       {
-        "matcher": "compact",
-        "hooks": [
-          {
-            "type": "process",
-            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
-            "args": [
-              "PreCompact",
-              "pre:compact",
-              "SessionStart"
-            ],
-            "timeoutMs": 65000,
-            "statusMessage": "ZCodeECC: pre:compact"
-          }
-        ]
-      },
-      {
         "matcher": ".*",
         "hooks": [
           {

@@ -133,7 +133,7 @@ const UNSAFE_WINDOWS_SHELL_CHARS = /[\r\n&|<>^%!]/;
 function quoteWindowsCommandToken(value) {
   const token = String(value);
   if (UNSAFE_WINDOWS_SHELL_CHARS.test(token)) {
-    throw new Error('ZCode command contains characters that are unsafe for cmd.exe');
+    throw new Error('Claude Code command contains characters that are unsafe for cmd.exe');
   }
   if (token === '') return '""';
   if (!/[\s"]/.test(token)) return token;
@@ -193,7 +193,7 @@ function runClaude(args, options = {}, dependencies = {}) {
       } catch (error) {
         fail(
           'CLAUDE_COMMAND_FAILED',
-          `Could not run ZCode: ${error.message}`,
+          `Could not run Claude Code: ${error.message}`,
           { phase: options.phase || 'provider' }
         );
       }
@@ -211,7 +211,7 @@ function runClaude(args, options = {}, dependencies = {}) {
   if (timedOut) {
     fail(
       'CLAUDE_COMMAND_FAILED',
-      `ZCode command timed out after ${timeoutMs} ms`,
+      `Claude Code command timed out after ${timeoutMs} ms`,
       { phase: options.phase || 'provider' }
     );
   }
@@ -219,13 +219,13 @@ function runClaude(args, options = {}, dependencies = {}) {
     if (result.error.code === 'ENOENT') {
       fail(
         'CLAUDE_NOT_FOUND',
-        'ZCode is not installed or `claude` is not on PATH. Install ZCode, then rerun ECC setup.',
+        'Claude Code is not installed or `claude` is not on PATH. Install Claude Code, then rerun ECC setup.',
         { phase: options.phase || 'inventory' }
       );
     }
     fail(
       'CLAUDE_COMMAND_FAILED',
-      `Could not run ZCode: ${result.error.message}`,
+      `Could not run Claude Code: ${result.error.message}`,
       { phase: options.phase || 'provider' }
     );
   }
@@ -233,7 +233,7 @@ function runClaude(args, options = {}, dependencies = {}) {
     const detail = String(result.stderr || result.stdout || '').trim();
     fail(
       'CLAUDE_COMMAND_FAILED',
-      `ZCode command failed${detail ? `: ${detail}` : ''}`,
+      `Claude Code command failed${detail ? `: ${detail}` : ''}`,
       { phase: options.phase || 'provider' }
     );
   }

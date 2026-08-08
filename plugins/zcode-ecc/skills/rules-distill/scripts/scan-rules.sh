@@ -4,11 +4,11 @@
 # Output: JSON to stdout
 #
 # Environment:
-#   RULES_DISTILL_DIR  Override ~/.zcode/rules (for testing only)
+#   RULES_DISTILL_DIR  Override ~/.claude/rules (for testing only)
 
 set -euo pipefail
 
-RULES_DIR="${RULES_DISTILL_DIR:-${1:-$HOME/.zcode/rules}}"
+RULES_DIR="${RULES_DISTILL_DIR:-${1:-$HOME/.claude/rules}}"
 
 if [[ ! -d "$RULES_DIR" ]]; then
   jq -n --arg path "$RULES_DIR" '{"error":"rules directory not found","path":$path}' >&2

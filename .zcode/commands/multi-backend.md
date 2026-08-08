@@ -2,6 +2,8 @@
 description: "Run a backend-focused multi-model workflow for APIs, algorithms, data, and business logic."
 ---
 
+> ZCode compatibility boundary: The workflow names harness-only orchestration tools that ZCode does not expose with the same contract.
+
 # Backend - Backend-Focused Development
 
 Backend-focused workflow (Research → Ideation → Plan → Execute → Optimize → Review), Codex-led.

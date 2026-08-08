@@ -502,7 +502,7 @@ function resolveLegacyCompatibilitySelection(options = {}) {
   const canonicalLegacyLanguages = normalizedLegacyLanguages
     .map(language => LEGACY_LANGUAGE_ALIAS_TO_CANONICAL[language]);
   const baseModuleIds = LEGACY_COMPAT_BASE_MODULE_IDS_BY_TARGET[target || 'claude']
-    || LEGACY_COMPAT_BASE_MODULE_IDS_BY_TARGET.zcode;
+    || LEGACY_COMPAT_BASE_MODULE_IDS_BY_TARGET.claude;
   const moduleIds = dedupeStrings([
     ...baseModuleIds,
     ...(target === 'antigravity'

@@ -48,7 +48,7 @@ function hashToolCall(toolName, toolInput) {
   let key = '';
   if (name === 'Bash') {
     key = String(toolInput?.command || '').slice(0, 160);
-  } else if (/^(Edit|Edit|Write|NotebookEdit)$/.test(name)) {
+  } else if (/^(Edit|MultiEdit|Write|NotebookEdit)$/.test(name)) {
     // Fingerprint the actual change, not just the path. Hashing on file_path
     // alone made every distinct edit to the same file collide, so a few normal
     // edits to one file looked like a stuck loop. Include the edit content so
@@ -235,8 +235,8 @@ function run(rawInput) {
     bridge.last_timestamp = now;
     if (!bridge.first_timestamp) bridge.first_timestamp = now;
 
-    // Track modified files (Write/Edit/Edit only)
-    const isWriteOp = /^(Write|Edit|Edit)$/i.test(toolName);
+    // Track modified files (Write/Edit/MultiEdit only)
+    const isWriteOp = /^(Write|Edit|MultiEdit)$/i.test(toolName);
     if (isWriteOp) {
       const newPaths = extractFilePaths(toolName, toolInput);
       const existing = new Set(bridge.files_modified || []);

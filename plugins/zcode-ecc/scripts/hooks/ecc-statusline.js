@@ -5,7 +5,7 @@
  * Displays: model | task | $cost Nt Nf Nm | dir ██░░ N%
  *
  * Registered in settings.json under "statusLine", not in hooks.json.
- * Reads bridge file from ecc-metrics-bridge.js and stdin from ZCode runtime.
+ * Reads bridge file from ecc-metrics-bridge.js and stdin from Claude Code runtime.
  */
 
 'use strict';
@@ -37,7 +37,7 @@ function formatDuration(isoTimestamp) {
 
 /**
  * Build context progress bar with ANSI colors.
- * @param {number} remaining - Raw remaining percentage from ZCode
+ * @param {number} remaining - Raw remaining percentage from Claude Code
  * @returns {string} Colored bar string
  */
 function buildContextBar(remaining) {
@@ -65,7 +65,7 @@ function readCurrentTask(sessionId) {
     const safeSessionId = sanitizeSessionId(sessionId);
     if (!safeSessionId) return '';
 
-    const claudeDir = process.env.ZCODE_CONFIG_DIR || path.join(os.homedir(), '.zcode');
+    const claudeDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
     const todosDir = path.join(claudeDir, 'todos');
     if (!fs.existsSync(todosDir)) return '';
 

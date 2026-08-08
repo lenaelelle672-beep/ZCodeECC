@@ -2,12 +2,14 @@
 description: "Mark epic review requested, approved, or changes requested."
 ---
 
+> ZCode compatibility boundary: The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies.
+
 # /epic-review
 
 Coordinate review state for an epic issue.
 
 ```bash
-node scripts/github-coordination.js review <issue-number> --repo <owner/repo> --review approved
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/github-coordination.js" review <issue-number> --repo <owner/repo> --review approved
 ```
 
 What this does:

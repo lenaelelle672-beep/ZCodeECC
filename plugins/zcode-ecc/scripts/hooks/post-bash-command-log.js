@@ -41,7 +41,7 @@ function appendLine(filePath, line) {
 function agentDataHome() {
   const override = process.env.ECC_AGENT_DATA_HOME;
   if (override && override.trim()) return path.resolve(override.trim());
-  return path.join(os.homedir(), '.zcode');
+  return path.join(os.homedir(), '.claude');
 }
 
 function run(rawInput, mode = 'audit') {

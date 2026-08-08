@@ -97,8 +97,8 @@ if (gitConfig) {
   if (repoMatch) output.repo = repoMatch[1].trim();
 }
 
-// ── AGENTS.md ─────────────────────────────────────────────────────────────────
-const claudeMd = readFile('AGENTS.md');
+// ── CLAUDE.md ─────────────────────────────────────────────────────────────────
+const claudeMd = readFile('CLAUDE.md');
 if (claudeMd) {
   const goal = extractSection(claudeMd, 'Current Goal');
   if (goal && !output.goal) output.goal = goal.split('\n')[0].trim();

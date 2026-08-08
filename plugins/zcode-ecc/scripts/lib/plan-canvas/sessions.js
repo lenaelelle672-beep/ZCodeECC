@@ -23,7 +23,7 @@ function resolveStateDir(env = process.env) {
   if (dataHome && String(dataHome).trim()) {
     return path.join(path.resolve(String(dataHome).trim()), 'plan-canvas');
   }
-  return path.join(os.homedir(), '.zcode', 'plan-canvas');
+  return path.join(os.homedir(), '.claude', 'plan-canvas');
 }
 
 // Canonicalize so `./plan.md`, symlinks, and absolute paths all land on the

@@ -19,7 +19,7 @@ Run a deterministic repository harness audit and return a prioritized scorecard.
 Always run:
 
 ```bash
-node scripts/harness-audit.js <scope> --format <text|json> [--root <path>]
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/harness-audit.js" <scope> --format <text|json> [--root <path>]
 ```
 
 This script is the source of truth for scoring and checks. Do not invent additional dimensions or ad-hoc points.

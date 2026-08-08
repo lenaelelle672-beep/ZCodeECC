@@ -74,7 +74,7 @@ function normalizeRemoteUrl(remoteUrl) {
 }
 
 function resolveProjectRoot(cwd = process.cwd()) {
-  const envRoot = process.env.ZCODE_PROJECT_DIR;
+  const envRoot = process.env.CLAUDE_PROJECT_DIR;
   if (envRoot && fs.existsSync(envRoot)) {
     return path.resolve(envRoot);
   }

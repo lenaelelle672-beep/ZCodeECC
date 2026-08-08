@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const Ajv = require('ajv');
 
 const DEFAULT_INSTALL_CONFIG = 'ecc-install.json';
 const CONFIG_SCHEMA_PATH = path.join(__dirname, '..', '..', '..', 'schemas', 'ecc-install-config.schema.json');
@@ -23,6 +22,14 @@ function getValidator() {
   }
 
   const schema = readJson(CONFIG_SCHEMA_PATH, 'ecc-install-config.schema.json');
+  let Ajv;
+  try {
+    Ajv = require('ajv');
+  } catch (error) {
+    throw new Error(
+      `Validating ecc-install.json requires the optional ajv runtime dependency: ${error.message}`
+    );
+  }
   const ajv = new Ajv({ allErrors: true });
   cachedValidator = ajv.compile(schema);
   return cachedValidator;

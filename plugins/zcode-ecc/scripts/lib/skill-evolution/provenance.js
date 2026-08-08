@@ -53,8 +53,8 @@ function getSkillRoots(options = {}) {
 
   return {
     curated: path.join(repoRoot, 'skills'),
-    learned: path.join(homeDir, '.zcode', 'skills', 'learned'),
-    imported: path.join(homeDir, '.zcode', 'skills', 'imported'),
+    learned: path.join(homeDir, '.claude', 'skills', 'learned'),
+    imported: path.join(homeDir, '.claude', 'skills', 'imported'),
   };
 }
 

@@ -17,8 +17,8 @@ function resolveClaudePaths(options = {}) {
     || process.env.USERPROFILE
     || os.homedir();
   const configDir = options.configDir
-    || process.env.ZCODE_CONFIG_DIR
-    || path.join(homeDir, '.zcode');
+    || process.env.CLAUDE_CONFIG_DIR
+    || path.join(homeDir, '.claude');
   const projectRoot = options.projectRoot || process.cwd();
 
   return {
@@ -45,11 +45,11 @@ function findManualClaudePlugin(options = {}) {
   const { configDir } = resolveClaudePaths(options);
   const pluginsDir = path.join(configDir, 'plugins');
   const candidates = [
-    ['ecc', '.zcode-plugin', 'plugin.json'],
+    ['ecc', '.claude-plugin', 'plugin.json'],
     ['ecc', 'plugin.json'],
-    ['ecc@ecc', '.zcode-plugin', 'plugin.json'],
+    ['ecc@ecc', '.claude-plugin', 'plugin.json'],
     ['ecc@ecc', 'plugin.json'],
-    ['everything-claude-code', '.zcode-plugin', 'plugin.json'],
+    ['everything-claude-code', '.claude-plugin', 'plugin.json'],
     ['everything-claude-code', 'plugin.json'],
   ];
 
@@ -111,8 +111,8 @@ function findManagedClaudeInstalls(options = {}) {
       expectedRoot: configDir,
     },
     {
-      statePath: path.join(projectRoot, '.zcode', 'ecc', 'install-state.json'),
-      expectedRoot: path.join(projectRoot, '.zcode'),
+      statePath: path.join(projectRoot, '.claude', 'ecc', 'install-state.json'),
+      expectedRoot: path.join(projectRoot, '.claude'),
     },
   ];
   const findings = [];

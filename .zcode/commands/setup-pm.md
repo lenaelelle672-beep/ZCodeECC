@@ -11,16 +11,16 @@ Configure your preferred package manager for this project or globally.
 
 ```bash
 # Detect current package manager
-node scripts/setup-package-manager.js --detect
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/setup-package-manager.js" --detect
 
 # Set global preference
-node scripts/setup-package-manager.js --global pnpm
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/setup-package-manager.js" --global pnpm
 
 # Set project preference
-node scripts/setup-package-manager.js --project bun
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/setup-package-manager.js" --project bun
 
 # List available package managers
-node scripts/setup-package-manager.js --list
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/setup-package-manager.js" --list
 ```
 
 ## Detection Priority
@@ -76,5 +76,5 @@ export CLAUDE_PACKAGE_MANAGER=pnpm
 To see current package manager detection results, run:
 
 ```bash
-node scripts/setup-package-manager.js --detect
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/setup-package-manager.js" --detect
 ```

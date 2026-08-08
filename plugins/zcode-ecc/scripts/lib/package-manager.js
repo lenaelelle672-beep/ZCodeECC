@@ -153,10 +153,10 @@ function getAvailablePackageManagers() {
  *
  * Detection priority:
  * 1. Environment variable CLAUDE_PACKAGE_MANAGER
- * 2. Project-specific config (in .zcode/package-manager.json)
+ * 2. Project-specific config (in .claude/package-manager.json)
  * 3. package.json packageManager field
  * 4. Lock file detection
- * 5. Global user preference (in ~/.zcode/package-manager.json)
+ * 5. Global user preference (in ~/.claude/package-manager.json)
  * 6. Default to npm (no child processes spawned)
  *
  * @param {object} options - Options
@@ -177,7 +177,7 @@ function getPackageManager(options = {}) {
   }
 
   // 2. Check project-specific config
-  const projectConfigPath = path.join(projectDir, '.zcode', 'package-manager.json');
+  const projectConfigPath = path.join(projectDir, '.claude', 'package-manager.json');
   const projectConfig = readFile(projectConfigPath);
   if (projectConfig) {
     try {
@@ -267,7 +267,7 @@ function setProjectPackageManager(pmName, projectDir = process.cwd()) {
     throw new Error(`Unknown package manager: ${pmName}`);
   }
 
-  const configDir = path.join(projectDir, '.zcode');
+  const configDir = path.join(projectDir, '.claude');
   const configPath = path.join(configDir, 'package-manager.json');
 
   const config = {
@@ -354,7 +354,7 @@ function getSelectionPrompt() {
   message += 'Supported package managers: ' + Object.keys(PACKAGE_MANAGERS).join(', ') + '\n';
   message += '\nTo set your preferred package manager:\n';
   message += '  - Global: Set CLAUDE_PACKAGE_MANAGER environment variable\n';
-  message += '  - Or add to ~/.zcode/package-manager.json: {"packageManager": "pnpm"}\n';
+  message += '  - Or add to ~/.claude/package-manager.json: {"packageManager": "pnpm"}\n';
   message += '  - Or add to package.json: {"packageManager": "pnpm@8"}\n';
   message += '  - Or add a lock file to your project (e.g., pnpm-lock.yaml)\n';
 

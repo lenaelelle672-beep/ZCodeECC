@@ -8,16 +8,22 @@ ZCodeECC 是 ECC 2.2.0 的 ZCode 原生适配分支。它固定上游基线
 
 | ECC 源能力 | 数量 | ZCode 结果 | 状态 |
 | --- | ---: | --- | --- |
-| Agents | 67 | 67 个 `ecc-agent-*` 角色 Skill | limited：保留角色流程，不宣称独立模型、工具白名单或隔离子代理等价 |
-| Skills | 284 | 284 个 ZCode Skill | adapted |
-| Commands | 94 | 94 个 ZCode Command | adapted |
+| Agents | 67 | 67 个 `ecc-agent-*` 角色 Skill | 67 limited：保留角色流程，不宣称独立模型、工具白名单或隔离子代理等价 |
+| Skills | 284 | 284 个 ZCode Skill | 270 adapted / 14 limited：逐项记录语义边界，Claude CLI 型工作流不宣称等价 |
+| Commands | 94 | 94 个 ZCode Command | 82 adapted / 12 limited：关键入口使用 ZCode 原生覆盖，其余逐项标注 |
 | Rules | 122 | 22 个按技术域组织的 `ecc-rules-*` Skill，逐规则保留 122 条记录 | adapted |
-| Hooks | 21 | 20 个可加载 Hook group，21 条来源兼容记录 | adapted/limited |
+| Hooks | 21 | 19 个可加载 Hook group，21 条来源兼容记录 | 13 adapted / 8 limited 来源记录 |
 | MCP | 36 | 36 个 `enabled: false` 的独立片段；主插件启用 0 个 | opt-in |
 
 机器可读的逐项结果位于
 [`plugins/zcode-ecc/compatibility-manifest.json`](../plugins/zcode-ecc/compatibility-manifest.json)。
 源目录增加、删除或转换结果漂移时，`npm run check:zcode` 会失败。
+
+适配器只对 Skill/Command 的 Markdown 契约做路径和前置元数据投影，不再对
+JavaScript、Python、Shell、JSON 等运行资产做全局字符串替换。若这些资产仍含
+Claude 专属 CLI、存储或环境变量契约，对应能力会在清单和 Skill 顶部标为
+`limited`。`configure-ecc`、`auto-update`、`ecc-guide` 使用单独审查过的 ZCode
+语义覆盖；Command 依赖的运行脚本会同时打包到原生插件和受管安装中。
 
 ## 推荐安装：ZCode 原生插件
 
@@ -91,8 +97,9 @@ ZCode 会自动连接各作用域中已配置的 MCP，所以 ZCodeECC 不做批
 
 ## Hook 兼容边界
 
-- `PreCompact` 没有原生等价事件，映射到 `SessionStart(compact)`，因此发生在
-  压缩之后。
+- `PreCompact` 没有原生等价事件。ZCode CLI 0.16.1 的 `SessionStart` 只会以
+  `startup` 或 `resume` 触发，因此不会生成虚假的 `SessionStart(compact)`；现有
+  `Stop` 持久化只能保留摘要意图，不能保证压缩前时机。
 - `SessionEnd` 没有原生事件；会话持久化保留在现有 `Stop` 流程中，但无法保证
   最终退出清理的等价时机。
 - ZCode CLI 0.16.1 忽略 `async`，相关 Hook 会内联等待并在兼容清单中标记
@@ -116,7 +123,7 @@ npm run smoke:zcode
 
 `smoke:zcode` 使用临时 HOME 和临时工作区调用真实 ZCode CLI，不读取或修改
 `~/.zcode/cli/config.json`，也不发起模型请求。当前本机验收基线为 ZCode Desktop
-3.7.3 / CLI 0.16.1；期望结果为 373 Skills、94 Commands、20 Hook groups、
+3.7.3 / CLI 0.16.1；期望结果为 373 Skills、94 Commands、19 Hook groups、
 0 个启用的 MCP、0 条诊断。
 
 ## 同步上游

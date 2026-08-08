@@ -3,6 +3,8 @@ name: autonomous-agent-harness
 description: "Transform ZCode into a fully autonomous agent system with persistent memory, scheduled operations, computer use, and task queuing. Replaces standalone agent frameworks (Hermes, AutoGPT) by leveraging ZCode's native crons, dispatch, MCP tools, and memory. Use when the user wants continuous autonomous operation, scheduled tasks, or a self-directing agent loop."
 ---
 
+> ZCode compatibility boundary: Claude CLI subprocess examples are not ZCode CLI equivalents.
+
 # Autonomous Agent Harness
 
 Turn ZCode into a persistent, self-directing agent system using only native features and MCP servers.

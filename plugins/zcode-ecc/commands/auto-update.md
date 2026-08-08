@@ -1,28 +1,40 @@
 ---
-description: "Pull the latest ECC repo changes and reinstall the current managed targets."
+description: "Update ZCodeECC through the installation route that actually owns it, with a preview for managed files."
 disable-noninteractive: true
 ---
 
-# Auto Update
+# Auto Update ZCodeECC
 
-Update ECC from its upstream repo and regenerate the current context's managed install using the original install-state request.
+First determine whether ZCodeECC is owned by ZCode Plugin Management or by
+`~/.zcode/ecc-install-state.json`. Do not update both routes and do not run
+`git pull` inside ZCode's plugin cache.
 
-## Usage
+## Native plugin
+
+Open **Settings -> Plugin Management -> Installed**, select `zcode-ecc`, and
+use ZCode's refresh or reinstall control. Verify that the resulting plugin ID
+is `zcode-ecc`, then list Skills and Commands and check diagnostics. ZCode CLI
+0.16.1 can inspect installed plugins but does not provide an equivalent update
+command.
+
+## Managed files
+
+When operating from a trusted ZCodeECC git checkout, preview first:
 
 ```bash
-# Preview the update without mutating anything
-ECC_ROOT="${ZCODE_PLUGIN_ROOT:-$(node -e "var r=(function(){var p=require('path'),f=require('fs'),o=require('os');var e=process.env.ZCODE_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var d=p.join(o.homedir(),'.zcode');function L(x){try{return require(p.join(x,'scripts','lib','resolve-ecc-root')).resolveEccRoot({probe:p.join('scripts','auto-update.js')})}catch(_){return null}}var r=L(d);if(r)return r;var s=['ecc','ecc@ecc','marketplaces/ecc','everything-claude-code','everything-claude-code@everything-claude-code','marketplaces/everything-claude-code'];for(var i=0;i<s.length;i++){r=L(p.join(d,'plugins',s[i]));if(r)return r}try{var g=['ecc','everything-claude-code'];for(var j=0;j<g.length;j++){var c=p.join(d,'plugins','cache',g[j]);var O=f.readdirSync(c);for(var k=0;k<O.length;k++){var q=p.join(c,O[k]);var V=f.readdirSync(q);for(var m=0;m<V.length;m++){r=L(p.join(q,V[m]));if(r)return r}}}}catch(_){}return d})();console.log(r)")}"
-node "$ECC_ROOT/scripts/auto-update.js" --dry-run
-
-# Update only Cursor-managed files in the current project
-node "$ECC_ROOT/scripts/auto-update.js" --target cursor
-
-# Override the ECC repo root explicitly
-node "$ECC_ROOT/scripts/auto-update.js" --repo-root /path/to/everything-claude-code
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/auto-update.js" --target zcode --dry-run --json
 ```
 
-## Notes
+Require the preview to identify that checkout as the repository root and show
+only the recorded ZCode install request. After explicit confirmation, rerun it
+without `--dry-run`.
 
-- This command uses the recorded install-state request and reruns `install-apply.js` after pulling the latest repo changes.
-- Reinstall is intentional: it handles upstream renames and deletions that `repair.js` cannot safely reconstruct from stale operations alone.
-- Use `--dry-run` first if you want to see the reconstructed reinstall plan before mutating anything.
+If no trusted checkout exists, reconstruct the profile, modules, or Skill IDs
+from `~/.zcode/ecc-install-state.json` and preview a current package install:
+
+```bash
+npx --yes --package ecc-universal ecc install --target zcode <recorded-selection> --dry-run --json
+```
+
+Never synthesize `<recorded-selection>` or mutate files when the recorded
+request cannot be verified.

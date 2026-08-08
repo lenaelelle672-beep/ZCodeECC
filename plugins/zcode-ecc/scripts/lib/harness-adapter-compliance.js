@@ -42,7 +42,7 @@ function freezeRecord(record) {
 const ADAPTER_RECORDS = Object.freeze([
   {
     id: 'claude-code',
-    harness: 'ZCode',
+    harness: 'Claude Code',
     state: 'Native',
     supported_assets: [
       'Claude plugin assets',
@@ -66,7 +66,7 @@ const ADAPTER_RECORDS = Object.freeze([
     last_verified_at: '2026-05-12',
     owner: 'ECC maintainers',
     source_docs: [
-      '.zcode-plugin/plugin.json',
+      '.claude-plugin/plugin.json',
       'docs/architecture/cross-harness.md',
       'scripts/lib/install-targets/claude-home.js',
     ],
@@ -107,7 +107,7 @@ const ADAPTER_RECORDS = Object.freeze([
       'MCP config',
       'event adapter patterns',
     ],
-    unsupported_surfaces: ['Event names, plugin packaging, and command dispatch differ from ZCode'],
+    unsupported_surfaces: ['Event names, plugin packaging, and command dispatch differ from Claude Code'],
     install_or_onramp: ['OpenCode package or plugin surface from this repo'],
     verification_commands: [
       '`node tests/scripts/build-opencode.test.js`',
@@ -132,7 +132,7 @@ const ADAPTER_RECORDS = Object.freeze([
       'hook adapter',
       'shared scripts',
     ],
-    unsupported_surfaces: ['Cursor hook events and rule loading differ from ZCode'],
+    unsupported_surfaces: ['Cursor hook events and rule loading differ from Claude Code'],
     install_or_onramp: ['`./install.sh --profile minimal --target cursor`'],
     verification_commands: [
       '`node tests/lib/install-targets.test.js`',

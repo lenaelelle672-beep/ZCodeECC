@@ -3,6 +3,8 @@ name: continuous-learning-v2
 description: "Instinct-based learning system that observes sessions via hooks, creates atomic instincts with confidence scoring, and evolves them into skills/commands/agents. v2.1 adds project-scoped instincts to prevent cross-project contamination."
 ---
 
+> ZCode compatibility boundary: Claude CLI subprocess examples are not ZCode CLI equivalents. The bundled runtime contains a Claude-specific subprocess contract. A bundled non-Markdown asset retains a Claude-specific runtime or storage contract and is shipped unchanged to avoid unsafe textual code rewriting.
+
 # Continuous Learning v2.1 - Instinct
 -Based Architecture
 

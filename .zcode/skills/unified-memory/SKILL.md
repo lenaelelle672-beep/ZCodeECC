@@ -3,6 +3,8 @@ name: unified-memory
 description: "Share durable, inspectable context and handoffs between Claude, Codex, Hermes, Cursor, OpenCode, and other agents through the local ECC Memory Vault. Use when an agent must save work state, transfer context, resume another agent's task, or search shared project knowledge."
 ---
 
+> ZCode compatibility boundary: Claude plugin lifecycle commands require a ZCode-specific route.
+
 # Unified Memory
 
 Use the ECC Memory Vault as the common context layer between harnesses. The

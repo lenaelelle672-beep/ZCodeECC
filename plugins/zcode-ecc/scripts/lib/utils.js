@@ -1,5 +1,5 @@
 /**
- * Cross-platform utility functions for ZCode hooks and scripts
+ * Cross-platform utility functions for Claude Code hooks and scripts
  * Works on Windows, macOS, and Linux
  */
 
@@ -148,7 +148,7 @@ function getProjectName() {
  * Sanitize a string for use as a session filename segment.
  * Replaces invalid characters with hyphens, collapses runs, strips
  * leading/trailing hyphens, and removes leading dots so hidden-dir names
- * like ".zcode" map cleanly to "claude".
+ * like ".claude" map cleanly to "claude".
  *
  * Pure non-ASCII inputs get a stable 8-char hash so distinct names do not
  * collapse to the same fallback session id. Mixed-script inputs retain their
@@ -361,7 +361,7 @@ async function readStdinJson(options = {}) {
 }
 
 /**
- * Log to stderr (visible to user in ZCode)
+ * Log to stderr (visible to user in Claude Code)
  */
 function log(message) {
   console.error(message);

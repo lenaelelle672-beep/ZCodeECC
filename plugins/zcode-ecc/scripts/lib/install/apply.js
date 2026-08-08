@@ -111,7 +111,7 @@ function replacePluginRootPlaceholders(value, pluginRoot) {
   }
 
   if (typeof value === 'string') {
-    return value.split('${ZCODE_PLUGIN_ROOT}').join(pluginRoot);
+    return value.split('${CLAUDE_PLUGIN_ROOT}').join(pluginRoot);
   }
 
   if (Array.isArray(value)) {

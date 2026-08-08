@@ -2,12 +2,14 @@
 description: "Sync epic issue bodies, labels, and local coordination snapshots from GitHub."
 ---
 
+> ZCode compatibility boundary: The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies.
+
 # /epic-sync
 
 Run a deterministic sync for epic issues.
 
 ```bash
-node scripts/github-coordination.js sync --repo <owner/repo>
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/github-coordination.js" sync --repo <owner/repo>
 ```
 
 What this does:

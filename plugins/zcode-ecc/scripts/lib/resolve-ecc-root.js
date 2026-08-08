@@ -22,7 +22,7 @@ const PLUGIN_ROOT_SEGMENTS = [
 // probe. A real ECC root ships both the script tree AND ECC's skills; a partial
 // install (scripts copied, skills not) must not qualify for skill-resolving
 // callers, which build `skills/...` paths against the resolved root (#2544).
-// Checking "skills/ exists" is not enough — a user's own ~/.zcode/skills/ can
+// Checking "skills/ exists" is not enough — a user's own ~/.claude/skills/ can
 // be present with none of ECC's skills — so we probe for a sentinel skill that
 // ships in every ECC root and is exactly what the failing skill commands need.
 // If that skill is ever renamed, move this sentinel with it.
@@ -33,11 +33,11 @@ const DEFAULT_SKILL_PROBE = path.join('skills', 'continuous-learning-v2');
  * Resolve the ECC source root directory.
  *
  * Tries, in order:
- *   1. ZCODE_PLUGIN_ROOT / ZCODE_PLUGIN_ROOT / ECC_PLUGIN_ROOT
- *   2. Standard Claude install location (~/.zcode/) — when scripts exist there
- *   3. Known plugin roots under ~/.zcode/plugins/ (current + legacy slugs)
- *   4. Plugin cache auto-detection — scans ~/.zcode/plugins/cache/{ecc,everything-claude-code}/
- *   5. Fallback to ~/.zcode/ (original behaviour)
+ *   1. ZCODE_PLUGIN_ROOT / CLAUDE_PLUGIN_ROOT / ECC_PLUGIN_ROOT
+ *   2. Standard Claude install location (~/.claude/) — when scripts exist there
+ *   3. Known plugin roots under ~/.claude/plugins/ (current + legacy slugs)
+ *   4. Plugin cache auto-detection — scans ~/.claude/plugins/cache/{ecc,everything-claude-code}/
+ *   5. Fallback to ~/.claude/ (original behaviour)
  *
  * @param {object} [options]
  * @param {string} [options.homeDir]  Override home directory (for testing)
@@ -57,7 +57,7 @@ function resolveEccRoot(options = {}) {
     ? options.envRoot
     : (
       process.env.ZCODE_PLUGIN_ROOT
-      || process.env.ZCODE_PLUGIN_ROOT
+      || process.env.CLAUDE_PLUGIN_ROOT
       || process.env.ECC_PLUGIN_ROOT
       || ''
     );
@@ -67,20 +67,20 @@ function resolveEccRoot(options = {}) {
   }
 
   const homeDir = options.homeDir || os.homedir();
-  const claudeDir = path.join(homeDir, '.zcode');
+  const claudeDir = path.join(homeDir, '.claude');
 
   // Decide whether a candidate directory is a usable ECC root. An explicit
   // caller probe is honored exactly (script consumers know the artifact they
   // need). With the default probe the caller is a skill consumer, so a
   // candidate must contain both ECC's scripts and a sentinel ECC skill —
-  // otherwise a scripts-only ~/.zcode short-circuits and every skill path
+  // otherwise a scripts-only ~/.claude short-circuits and every skill path
   // resolves to a location that does not exist (#2544).
   const isRoot = options.probe
     ? (dir) => fs.existsSync(path.join(dir, options.probe))
     : (dir) => fs.existsSync(path.join(dir, DEFAULT_SCRIPT_PROBE))
             && fs.existsSync(path.join(dir, DEFAULT_SKILL_PROBE));
 
-  // Standard Claude install — files are copied directly into ~/.zcode/
+  // Standard Claude install — files are copied directly into ~/.claude/
   if (isRoot(claudeDir)) {
     return claudeDir;
   }
@@ -97,8 +97,8 @@ function resolveEccRoot(options = {}) {
     }
   }
 
-  // Plugin cache — ZCode stores marketplace plugins under
-  // ~/.zcode/plugins/cache/<plugin-name>/<org>/<version>/
+  // Plugin cache — Claude Code stores marketplace plugins under
+  // ~/.claude/plugins/cache/<plugin-name>/<org>/<version>/
   try {
     for (const slug of PLUGIN_CACHE_SLUGS) {
       const cacheBase = path.join(claudeDir, 'plugins', 'cache', slug);
@@ -140,10 +140,10 @@ function resolveEccRoot(options = {}) {
  *
  * This minified form contains no spread, no nested array literals, and no
  * escaped double quotes, so it survives `node -e "..."` quoting on every shell.
- * When ZCODE_PLUGIN_ROOT is set (as ZCode does for plugin hooks and
+ * When CLAUDE_PLUGIN_ROOT is set (as Claude Code does for plugin hooks and
  * commands) it is used directly. Otherwise the inline probes the same set of
- * locations resolveEccRoot() knows about — ~/.zcode, the exact plugin roots
- * under ~/.zcode/plugins/, and the versioned plugin cache — only far enough to
+ * locations resolveEccRoot() knows about — ~/.claude, the exact plugin roots
+ * under ~/.claude/plugins/, and the versioned plugin cache — only far enough to
  * load the committed resolve-ecc-root module, then delegates the authoritative
  * decision to resolveEccRoot(). This keeps discovery behaviour identical to the
  * old inline while centralising the real logic in one tested module.
@@ -152,7 +152,7 @@ function resolveEccRoot(options = {}) {
  *   const _r = <paste INLINE_RESOLVE>;
  *   const sm = require(_r + '/scripts/lib/session-manager');
  */
-const INLINE_RESOLVE = `(function(){var p=require('path'),f=require('fs'),o=require('os');var e=process.env.ZCODE_PLUGIN_ROOT||process.env.ECC_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var d=p.join(o.homedir(),'.zcode');function L(x){try{return require(p.join(x,'scripts','lib','resolve-ecc-root')).resolveEccRoot({envRoot:x})}catch(_){return null}}var r=L(d);if(r)return r;var s=['ecc','ecc@ecc','marketplaces/ecc','everything-claude-code','everything-claude-code@everything-claude-code','marketplaces/everything-claude-code'];for(var i=0;i<s.length;i++){r=L(p.join(d,'plugins',s[i]));if(r)return r}try{var g=['ecc','everything-claude-code'];for(var j=0;j<g.length;j++){var c=p.join(d,'plugins','cache',g[j]);var O=f.readdirSync(c);for(var k=0;k<O.length;k++){var q=p.join(c,O[k]);var V=f.readdirSync(q);for(var m=0;m<V.length;m++){r=L(p.join(q,V[m]));if(r)return r}}}}catch(_){}return d})()`;
+const INLINE_RESOLVE = `(function(){var p=require('path'),f=require('fs'),o=require('os');var e=process.env.CLAUDE_PLUGIN_ROOT||process.env.ECC_PLUGIN_ROOT;if(e&&e.trim())return e.trim();var d=p.join(o.homedir(),'.claude');function L(x){try{return require(p.join(x,'scripts','lib','resolve-ecc-root')).resolveEccRoot({envRoot:x})}catch(_){return null}}var r=L(d);if(r)return r;var s=['ecc','ecc@ecc','marketplaces/ecc','everything-claude-code','everything-claude-code@everything-claude-code','marketplaces/everything-claude-code'];for(var i=0;i<s.length;i++){r=L(p.join(d,'plugins',s[i]));if(r)return r}try{var g=['ecc','everything-claude-code'];for(var j=0;j<g.length;j++){var c=p.join(d,'plugins','cache',g[j]);var O=f.readdirSync(c);for(var k=0;k<O.length;k++){var q=p.join(c,O[k]);var V=f.readdirSync(q);for(var m=0;m<V.length;m++){r=L(p.join(q,V[m]));if(r)return r}}}}catch(_){}return d})()`;
 
 module.exports = {
   resolveEccRoot,

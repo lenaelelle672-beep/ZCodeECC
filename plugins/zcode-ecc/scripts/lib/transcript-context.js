@@ -1,7 +1,7 @@
 /**
  * Transcript context-size helpers for the strategic-compact hook (#2155).
  *
- * Reads the latest assistant `usage` record from a ZCode session
+ * Reads the latest assistant `usage` record from a Claude Code session
  * transcript (JSONL) and derives a context-size signal:
  *
  * - `input_tokens + cache_read_input_tokens + cache_creation_input_tokens`
@@ -30,7 +30,7 @@ const LARGE_WINDOW_MODEL_MARKER = '[1m]';
 
 // Known large-window model families whose ids carry no `[1m]` marker (#2461).
 // Matched boundary-aware against the model id — covers dated/region-prefixed
-// variants (e.g. `us.anthropic.zcode-fable-5-20260115-v1:0`) without matching
+// variants (e.g. `us.anthropic.claude-fable-5-20260115-v1:0`) without matching
 // hypothetical smaller tiers sharing the prefix (e.g. `claude-fable-5-mini`).
 // Checked in order, first match wins. Best-effort and expected to lag new
 // releases; the env override remains the escape hatch for unlisted models.
@@ -167,7 +167,7 @@ function readLatestContextTokens(transcriptPath, options = {}) {
 function resolveContextWindowTokens(tokens, model) {
   // Explicit window override wins: 400k models (e.g. Opus 4.x) match neither the
   // 200k default nor the 1M marker and would otherwise report ~double usage (#2290).
-  // Honor ECC's own knob and ZCode's native CLAUDE_CODE_AUTO_COMPACT_WINDOW.
+  // Honor ECC's own knob and Claude Code's native CLAUDE_CODE_AUTO_COMPACT_WINDOW.
   const env = (typeof process !== 'undefined' && process.env) || {};
   const envWindow = Number.parseInt(env.ECC_CONTEXT_WINDOW_TOKENS || env.CLAUDE_CODE_AUTO_COMPACT_WINDOW || '', 10);
   if (Number.isInteger(envWindow) && envWindow > 0) {

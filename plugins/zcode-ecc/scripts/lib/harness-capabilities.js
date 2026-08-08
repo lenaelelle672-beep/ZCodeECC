@@ -31,17 +31,17 @@ function hooks(mode, eccConfigured, note) {
 const HARNESS_CAPABILITIES = deepFreeze([
   {
     id: 'claude',
-    label: 'ZCode',
+    label: 'Claude Code',
     targetIds: ['claude', 'claude-project'],
     channel: 'native-plugin',
     installMode: 'native-plugin',
     guidedReady: true,
     availability: 'guided',
-    destination: 'Selected Claude plugin scope: ~/.zcode or ./.zcode',
+    destination: 'Selected Claude plugin scope: ~/.claude or ./.claude',
     scopes: [
-      scope('user', 'claude', '~/.zcode'),
-      scope('project', 'claude-project', './.zcode'),
-      scope('local', 'claude-project', './.zcode'),
+      scope('user', 'claude', '~/.claude'),
+      scope('project', 'claude-project', './.claude'),
+      scope('local', 'claude-project', './.claude'),
     ],
     hooks: hooks(
       'profile-selection',

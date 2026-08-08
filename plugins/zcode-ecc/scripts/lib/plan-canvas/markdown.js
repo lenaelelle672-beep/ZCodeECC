@@ -2,7 +2,7 @@
 
 /**
  * Minimal GitHub-flavored-markdown subset renderer for Plan Canvas.
- * Renders .zcode/plans/*.plan.md artifacts to HTML body content.
+ * Renders .claude/plans/*.plan.md artifacts to HTML body content.
  *
  * Security model: the entire source line is HTML-escaped before any inline
  * rule runs, so raw HTML in the markdown always displays as text. Link and

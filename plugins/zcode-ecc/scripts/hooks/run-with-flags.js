@@ -103,8 +103,8 @@ function resolveLegacySpawnStdout(raw, result) {
 }
 
 function getPluginRoot() {
-  if (process.env.ZCODE_PLUGIN_ROOT && process.env.ZCODE_PLUGIN_ROOT.trim()) {
-    return process.env.ZCODE_PLUGIN_ROOT;
+  if (process.env.CLAUDE_PLUGIN_ROOT && process.env.CLAUDE_PLUGIN_ROOT.trim()) {
+    return process.env.CLAUDE_PLUGIN_ROOT;
   }
   return path.resolve(__dirname, '..', '..');
 }
@@ -242,7 +242,7 @@ async function main() {
     encoding: 'utf8',
     env: {
       ...process.env,
-      ZCODE_PLUGIN_ROOT: pluginRoot,
+      CLAUDE_PLUGIN_ROOT: pluginRoot,
       ECC_PLUGIN_ROOT: pluginRoot,
       ECC_HOOK_ID: hookId,
       ECC_HOOK_INPUT_TRUNCATED: truncated ? '1' : '0',

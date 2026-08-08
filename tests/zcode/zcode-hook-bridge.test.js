@@ -2,7 +2,7 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { execFileSync, spawnSync } = require('child_process');
 
 const repoRoot = path.resolve(__dirname, '../..');
 const {
@@ -81,6 +81,47 @@ test('executes an adapted bundled hook and returns strict ZCode JSON', () => {
     assert.strictEqual(parsed.hookSpecificOutput.hookEventName, 'PreToolUse');
     assert.match(parsed.hookSpecificOutput.additionalContext, /Ad-hoc documentation/i);
     assert.ok(!fs.existsSync(path.join(homeDir, '.claude')));
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test('preserves config-protection blocking behavior through the ZCode bridge', () => {
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'zcode-ecc-guard-'));
+  const homeDir = path.join(temporaryRoot, 'home');
+  const workspace = path.join(temporaryRoot, 'workspace');
+  const pluginRoot = path.join(repoRoot, 'plugins', 'zcode-ecc');
+  const protectedPath = path.join(workspace, 'eslint.config.js');
+  fs.mkdirSync(homeDir, { recursive: true });
+  fs.mkdirSync(workspace, { recursive: true });
+  fs.writeFileSync(protectedPath, 'export default [];\n');
+  try {
+    const rawInput = JSON.stringify({
+      hook_event_name: 'PreToolUse',
+      tool_name: 'Edit',
+      tool_input: { file_path: protectedPath, old_string: '[]', new_string: '[{}]' },
+    });
+    const result = spawnSync(process.execPath, [
+      path.join(pluginRoot, 'scripts', 'zcode', 'hook-bridge.js'),
+      'PreToolUse',
+      'pre:config-protection',
+      'PreToolUse',
+    ], {
+      cwd: workspace,
+      env: {
+        ...process.env,
+        HOME: homeDir,
+        ZCODE_PLUGIN_ROOT: pluginRoot,
+        ECC_HOOK_PROFILE: 'standard',
+      },
+      input: rawInput,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    assert.strictEqual(result.status, 2);
+    assert.match(result.stderr, /BLOCKED: Modifying eslint\.config\.js/);
+    assert.strictEqual(result.stdout, '');
+    assert.strictEqual(fs.readFileSync(protectedPath, 'utf8'), 'export default [];\n');
   } finally {
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }

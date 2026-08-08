@@ -41,7 +41,7 @@ function extractSessionSummary(transcriptPath) {
 
       // Collect user messages (first 200 chars each)
       if (entry.type === 'user' || entry.role === 'user' || entry.message?.role === 'user') {
-        // Support both direct content and nested message.content (ZCode JSONL format)
+        // Support both direct content and nested message.content (Claude Code JSONL format)
         const rawContent = entry.message?.content ?? entry.content;
         const text = typeof rawContent === 'string' ? rawContent : Array.isArray(rawContent) ? rawContent.map(c => (c && c.text) || '').join(' ') : '';
         const cleaned = stripAnsi(text).trim();
@@ -61,7 +61,7 @@ function extractSessionSummary(transcriptPath) {
         }
       }
 
-      // Extract tool uses from assistant message content blocks (ZCode JSONL format)
+      // Extract tool uses from assistant message content blocks (Claude Code JSONL format)
       if (entry.type === 'assistant' && Array.isArray(entry.message?.content)) {
         for (const block of entry.message.content) {
           if (block.type === 'tool_use') {
@@ -94,7 +94,7 @@ function extractSessionSummary(transcriptPath) {
   };
 }
 
-// Read hook input from stdin (ZCode provides transcript_path via stdin JSON)
+// Read hook input from stdin (Claude Code provides transcript_path via stdin JSON)
 const MAX_STDIN = 1024 * 1024;
 let stdinData = '';
 process.stdin.setEncoding('utf8');

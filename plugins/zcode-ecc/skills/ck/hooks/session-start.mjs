@@ -10,7 +10,7 @@
  * - Compact 5-line summary for registered projects
  * - Unsaved session detection → "Last session wasn't saved. Run /ck:save."
  * - Git activity since last session
- * - Goal mismatch detection vs AGENTS.md
+ * - Goal mismatch detection vs CLAUDE.md
  * - Mini portfolio for unregistered directories
  */
 
@@ -19,10 +19,10 @@ import { resolve } from 'path';
 import { homedir } from 'os';
 import { spawnSync } from 'child_process';
 
-const CK_HOME         = resolve(homedir(), '.zcode', 'ck');
+const CK_HOME         = resolve(homedir(), '.claude', 'ck');
 const PROJECTS_FILE   = resolve(CK_HOME, 'projects.json');
 const CURRENT_SESSION = resolve(CK_HOME, 'current-session.json');
-const SKILL_FILE      = resolve(homedir(), '.zcode', 'skills', 'ck', 'SKILL.md');
+const SKILL_FILE      = resolve(homedir(), '.claude', 'skills', 'ck', 'SKILL.md');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -60,7 +60,7 @@ function gitLogSince(projectPath, sinceDate) {
 }
 
 function extractClaudeMdGoal(projectPath) {
-  const p = resolve(projectPath, 'AGENTS.md');
+  const p = resolve(projectPath, 'CLAUDE.md');
   if (!existsSync(p)) return null;
   try {
     const md = readFileSync(p, 'utf8');
@@ -142,7 +142,7 @@ function main() {
       const claudeMdGoal = extractClaudeMdGoal(cwd);
       if (claudeMdGoal && context.goal &&
           claudeMdGoal.toLowerCase().trim() !== context.goal.toLowerCase().trim()) {
-        summaryLines.push(`WARNING Goal mismatch — ck: "${context.goal.slice(0, 40)}" · AGENTS.md: "${claudeMdGoal.slice(0, 40)}"`);
+        summaryLines.push(`WARNING Goal mismatch — ck: "${context.goal.slice(0, 40)}" · CLAUDE.md: "${claudeMdGoal.slice(0, 40)}"`);
         summaryLines.push(`   Run /ck:save with updated goal to sync`);
       }
 

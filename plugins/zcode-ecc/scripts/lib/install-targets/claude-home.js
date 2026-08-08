@@ -49,9 +49,9 @@ module.exports = createInstallTargetAdapter({
   id: 'claude-home',
   target: 'claude',
   kind: 'home',
-  rootSegments: ['.zcode'],
+  rootSegments: ['.claude'],
   installStatePathSegments: ['ecc', 'install-state.json'],
-  nativeRootRelativePath: '.zcode-plugin',
+  nativeRootRelativePath: '.claude-plugin',
   planOperations(input, adapter) {
     const modules = Array.isArray(input.modules)
       ? input.modules

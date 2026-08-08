@@ -10,7 +10,14 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const { extractConversationText, getContextRemainingPct, getContextThreshold, getLLMModel, generateSessionSummary } = require('../../scripts/lib/llm-summary');
+const {
+  extractConversationText,
+  generateSessionSummary,
+  getContextRemainingPct,
+  getContextThreshold,
+  getLLMModel,
+  resolveSummaryInvocation,
+} = require('../../scripts/lib/llm-summary');
 
 console.log('=== Testing llm-summary.js ===\n');
 
@@ -120,7 +127,7 @@ test('extracts user and assistant turns', () => {
   const p = writeTranscript([userEntry('Hello, can you help?'), assistantEntry('Sure, what do you need?')]);
   const result = extractConversationText(p);
   assert.ok(result.includes('User:'));
-  assert.ok(result.includes('Claude:'));
+  assert.ok(result.includes('Assistant:'));
   assert.ok(result.includes('Hello, can you help?'));
 });
 
@@ -190,6 +197,51 @@ test('returns null for missing transcript (no conversation to summarize)', () =>
   delete process.env.ECC_SKIP_LLM_SUMMARY;
   assert.strictEqual(generateSessionSummary('/nonexistent.jsonl'), null);
   if (orig !== undefined) process.env.ECC_SKIP_LLM_SUMMARY = orig;
+});
+
+test('keeps the Claude invocation contract outside ZCode', () => {
+  const invocation = resolveSummaryInvocation({
+    env: { ECC_LLM_SUMMARY_MODEL: 'sonnet' },
+    prompt: 'private prompt',
+  });
+  assert.strictEqual(invocation.command, 'claude');
+  assert.deepStrictEqual(invocation.args, ['--model', 'sonnet', '-p']);
+  assert.strictEqual(invocation.input, 'private prompt');
+});
+
+test('uses the ZCode CLI with a private attachment and no Claude model flag', () => {
+  const transcript = writeTranscript([
+    userEntry('private-zcode-conversation'),
+    assistantEntry('summary context'),
+  ]);
+  let attachmentPath = null;
+  const summary = generateSessionSummary(transcript, {
+    env: {
+      HOME: transcriptDir,
+      ECC_HARNESS: 'zcode',
+      ECC_ZCODE_CLI: '/opt/zcode/zcode.cjs',
+    },
+    execPath: '/opt/node',
+    spawnSync(command, args, options) {
+      assert.strictEqual(command, '/opt/node');
+      assert.strictEqual(args[0], '/opt/zcode/zcode.cjs');
+      assert.ok(args.includes('--prompt'));
+      assert.ok(args.includes('--attach'));
+      assert.ok(args.includes('plan'));
+      assert.ok(args.includes('1'));
+      assert.ok(!args.includes('--model'));
+      assert.ok(!args.join(' ').includes('private-zcode-conversation'));
+      assert.strictEqual(options.input, undefined);
+      attachmentPath = args[args.indexOf('--attach') + 1];
+      const mode = fs.statSync(attachmentPath).mode & 0o777;
+      assert.strictEqual(mode, 0o600);
+      assert.match(fs.readFileSync(attachmentPath, 'utf8'), /private-zcode-conversation/);
+      return { status: 0, stdout: 'ZCode summary\n', stderr: '' };
+    },
+  });
+  assert.strictEqual(summary, 'ZCode summary');
+  assert.ok(attachmentPath);
+  assert.ok(!fs.existsSync(attachmentPath), 'temporary prompt attachment should be removed');
 });
 
 // --- Results ---

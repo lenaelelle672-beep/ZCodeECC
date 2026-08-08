@@ -2,6 +2,8 @@
 description: "Run a full multi-model development workflow with research, planning, execution, optimization, and review."
 ---
 
+> ZCode compatibility boundary: The workflow names harness-only orchestration tools that ZCode does not expose with the same contract.
+
 # Workflow - Multi-Model Collaborative Development
 
 Multi-model collaborative development workflow (Research → Ideation → Plan → Execute → Optimize → Review), with intelligent routing: Frontend → Gemini, Backend → Codex.
@@ -112,7 +114,7 @@ TaskOutput({ task_id: "<task_id>", block: true, timeout: 600000 })
 Use external tmux/worktree orchestration when the work must be split across parallel workers that need isolated git state, independent terminals, or separate build/test execution. Use in-process subagents for lightweight analysis, planning, or review where the main session remains the only writer.
 
 ```bash
-node scripts/orchestrate-worktrees.js .zcode/plan/workflow-e2e-test.json --execute
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/orchestrate-worktrees.js" .zcode/plan/workflow-e2e-test.json --execute
 ```
 
 ---

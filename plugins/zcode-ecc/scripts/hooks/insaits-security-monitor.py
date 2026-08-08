@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-InsAIts Security Monitor -- PreToolUse Hook for ZCode
+InsAIts Security Monitor -- PreToolUse Hook for Claude Code
 ============================================================
 
-Real-time security monitoring for ZCode tool inputs.
+Real-time security monitoring for Claude Code tool inputs.
 Detects credential exposure, prompt injection, behavioral anomalies,
 hallucination chains, and 20+ other anomaly types -- runs 100% locally.
 
@@ -13,12 +13,12 @@ Setup:
   pip install insa-its
   export ECC_ENABLE_INSAITS=1
 
-  Add to .zcode/settings.json:
+  Add to .claude/settings.json:
   {
     "hooks": {
       "PreToolUse": [
         {
-          "matcher": "Bash|Write|Edit|Edit",
+          "matcher": "Bash|Write|Edit|MultiEdit",
           "hooks": [
             {
               "type": "command",
@@ -31,7 +31,7 @@ Setup:
   }
 
 How it works:
-  ZCode passes tool input as JSON on stdin.
+  Claude Code passes tool input as JSON on stdin.
   This script runs InsAIts anomaly detection on the content.
   Exit code 0 = clean (pass through).
   Exit code 2 = critical issue found (blocks tool execution).
@@ -93,7 +93,7 @@ BLOCKING_SEVERITIES: frozenset = frozenset({"CRITICAL"})
 
 
 def extract_content(data: Dict[str, Any]) -> Tuple[str, str]:
-    """Extract inspectable text from a ZCode tool input payload.
+    """Extract inspectable text from a Claude Code tool input payload.
 
     Returns:
         A (text, context) tuple where *text* is the content to scan and
@@ -105,7 +105,7 @@ def extract_content(data: Dict[str, Any]) -> Tuple[str, str]:
     text: str = ""
     context: str = ""
 
-    if tool_name in ("Write", "Edit", "Edit"):
+    if tool_name in ("Write", "Edit", "MultiEdit"):
         text = tool_input.get("content", "") or tool_input.get("new_string", "")
         context = "file:" + str(tool_input.get("file_path", ""))[:80]
     elif tool_name == "Bash":
@@ -158,7 +158,7 @@ def get_anomaly_attr(anomaly: Any, key: str, default: str = "") -> str:
 
 
 def format_feedback(anomalies: List[Any]) -> str:
-    """Format detected anomalies as feedback for ZCode.
+    """Format detected anomalies as feedback for Claude Code.
 
     Returns:
         A human-readable multi-line string describing each finding.
@@ -185,7 +185,7 @@ def format_feedback(anomalies: List[Any]) -> str:
 
 
 def main() -> None:
-    """Entry point for the ZCode PreToolUse hook."""
+    """Entry point for the Claude Code PreToolUse hook."""
     raw: str = sys.stdin.read().strip()
     if not raw:
         sys.exit(0)
@@ -256,7 +256,7 @@ def main() -> None:
     feedback: str = format_feedback(anomalies)
 
     if has_critical:
-        # stdout feedback -> ZCode shows to the model
+        # stdout feedback -> Claude Code shows to the model
         sys.stdout.write(feedback + "\n")
         sys.exit(2)  # PreToolUse exit 2 = block tool execution
     else:

@@ -4,15 +4,15 @@
  *
  * Reads transcript_path from Stop hook stdin, sums usage across all
  * assistant turns in the session JSONL, and appends one row to
- * ~/.zcode/metrics/costs.jsonl.
+ * ~/.claude/metrics/costs.jsonl.
  *
  * Stop hook stdin payload: { session_id, transcript_path, cwd, hook_event_name, ... }
  * The Stop payload does NOT include `usage` or `model` directly. The previous
  * version of this hook expected those fields and silently produced zero-filled
  * rows (verified: 2,340 rows captured with 0.0% non-zero token rate over 52
- * days). The fix is to read the transcript file ZCode already passes us.
+ * days). The fix is to read the transcript file Claude Code already passes us.
  *
- * JSONL assistant entry shape (per ZCode):
+ * JSONL assistant entry shape (per Claude Code):
  *   { type: "assistant", message: { model, usage: { input_tokens, output_tokens,
  *     cache_creation_input_tokens, cache_read_input_tokens } } }
  *
@@ -23,7 +23,7 @@
  *
  * Harness-cost contract (optional, opt-in by the statusline):
  *   If the user's statusline (which receives `cost.total_cost_usd` directly
- *   from ZCode) writes `{ts, cost_usd}` to
+ *   from Claude Code) writes `{ts, cost_usd}` to
  *   `<os.tmpdir()>/harness-cost-<session_id>.json` on each render, this hook
  *   prefers that authoritative value over the transcript-sum estimate when
  *   the cache is fresh (≤ 300s). The transcript-sum is kept as a safe
@@ -93,7 +93,7 @@ function toNumber(v) {
  * Returns { inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens, model }
  * or null on read failure.
  *
- * ZCode writes one JSONL line per content block, so a single API
+ * Claude Code writes one JSONL line per content block, so a single API
  * response (one message.id) spans multiple assistant lines that each repeat
  * the same message.usage. Summing every line inflates totals ~2.5-3x
  * (verified: a session with 704 assistant lines had only 286 unique

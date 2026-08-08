@@ -2,6 +2,8 @@
 description: "Create a multi-model implementation plan without modifying production code."
 ---
 
+> ZCode compatibility boundary: The workflow names harness-only orchestration tools that ZCode does not expose with the same contract.
+
 # Plan - Multi-Model Collaborative Planning
 
 Multi-model collaborative planning - Context retrieval + Dual-model analysis → Generate step-by-step implementation plan.

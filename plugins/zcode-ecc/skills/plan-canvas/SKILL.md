@@ -28,7 +28,7 @@ remote URLs. The canvas serves local artifact files only.
 ## How It Works
 
 Invoke the CLI as `ecc-plan-canvas` — the bin shipped by the `ecc-universal`
-package (on PATH after a global/plugin install; `node "$ZCODE_PLUGIN_ROOT/scripts/plan-canvas.js"`
+package (on PATH after a global/plugin install; `node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/plan-canvas.js"`
 also works for plugin installs). Run it from the project you are reviewing in;
 it works from any working directory. It manages a detached loopback server
 (`127.0.0.1:4517`) shared by all sessions, keyed by artifact path — no session
@@ -42,12 +42,12 @@ Codex — or just run the `ecc-plan-canvas` commands directly.
 
 ```bash
 # 1. Open the artifact in the user's browser (returns immediately)
-ecc-plan-canvas open .zcode/plans/feature.plan.md
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/plan-canvas.js" open .zcode/plans/feature.plan.md
 
 # 2. Block until the human responds. Leave running; re-run if interrupted —
 #    queued feedback is never lost. Run in the background if your harness
 #    time-limits foreground commands.
-ecc-plan-canvas await .zcode/plans/feature.plan.md
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/plan-canvas.js" await .zcode/plans/feature.plan.md
 ```
 
 `await` prints JSON when the human acts:
@@ -74,10 +74,10 @@ ecc-plan-canvas await .zcode/plans/feature.plan.md
 **3. Respond in the canvas**, then keep listening — one command does both:
 
 ```bash
-ecc-plan-canvas await <file> --reply "Split Phase 2 as requested — take a look."
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/plan-canvas.js" await <file> --reply "Split Phase 2 as requested — take a look."
 ```
 
-**4. End** when review concludes: `ecc-plan-canvas end <file>`.
+**4. End** when review concludes: `node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/plan-canvas.js" end <file>`.
 
 ## Diagrams (Mermaid)
 
@@ -124,10 +124,10 @@ mirror at `ECC_PLAN_CANVAS_MERMAID_URL` for air-gapped use.
 `.zcode/plans/notifications.plan.md` and must WAIT for confirmation:
 
 ```bash
-ecc-plan-canvas open .zcode/plans/notifications.plan.md
-ecc-plan-canvas await .zcode/plans/notifications.plan.md
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/plan-canvas.js" open .zcode/plans/notifications.plan.md
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/plan-canvas.js" await .zcode/plans/notifications.plan.md
 # → {"status":"feedback","items":[{"kind":"verdict","verdict":"approve"}]}
-ecc-plan-canvas end .zcode/plans/notifications.plan.md
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/plan-canvas.js" end .zcode/plans/notifications.plan.md
 # plan is confirmed — begin implementation
 ```
 
@@ -135,7 +135,7 @@ ecc-plan-canvas end .zcode/plans/notifications.plan.md
 
 ```bash
 # await returned annotations → edit the .plan.md (canvas live-reloads)
-ecc-plan-canvas await <file> --reply "Reworked the risk table."
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/plan-canvas.js" await <file> --reply "Reworked the risk table."
 # → blocks again until the next response
 ```
 

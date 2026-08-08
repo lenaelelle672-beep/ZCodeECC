@@ -141,7 +141,23 @@ test('installs and uninstalls only managed ZCode files in an isolated home', () 
     assert.strictEqual(installed.dryRun, false);
     assert.ok(fs.existsSync(path.join(zcodeRoot, 'commands', 'plan.md')));
     assert.ok(fs.existsSync(path.join(zcodeRoot, 'skills', 'ecc-agent-planner', 'SKILL.md')));
+    assert.ok(fs.existsSync(path.join(zcodeRoot, 'scripts', 'github-coordination.js')));
+    assert.ok(fs.existsSync(path.join(zcodeRoot, 'manifests', 'install-modules.json')));
+    assert.ok(fs.existsSync(path.join(zcodeRoot, 'schemas', 'ecc-install-config.schema.json')));
+    assert.ok(fs.existsSync(path.join(zcodeRoot, 'package.json')));
     assert.ok(fs.existsSync(statePath));
+    const managedPlan = JSON.parse(execFileSync(process.execPath, [
+      path.join(zcodeRoot, 'scripts', 'install-plan.js'),
+      '--profile', 'minimal',
+      '--target', 'zcode',
+      '--json',
+    ], {
+      cwd: projectDir,
+      env,
+      encoding: 'utf8',
+      maxBuffer: 8 * 1024 * 1024,
+    }));
+    assert.ok(managedPlan.operations.some(operation => normalize(operation.sourceRelativePath) === 'commands'));
     fs.writeFileSync(unrelatedPath, 'preserve me', 'utf8');
 
     const uninstallOutput = execFileSync('node', [
@@ -159,6 +175,8 @@ test('installs and uninstalls only managed ZCode files in an isolated home', () 
     assert.strictEqual(uninstalled.summary.uninstalledCount, 1);
     assert.ok(!fs.existsSync(statePath));
     assert.ok(!fs.existsSync(path.join(zcodeRoot, 'commands', 'plan.md')));
+    assert.ok(!fs.existsSync(path.join(zcodeRoot, 'scripts', 'github-coordination.js')));
+    assert.ok(!fs.existsSync(path.join(zcodeRoot, 'manifests', 'install-modules.json')));
     assert.ok(fs.existsSync(unrelatedPath));
   } finally {
     fs.rmSync(homeDir, { recursive: true, force: true });

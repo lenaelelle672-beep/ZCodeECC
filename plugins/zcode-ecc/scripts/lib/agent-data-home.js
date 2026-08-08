@@ -17,7 +17,7 @@ const path = require('path');
 const { assertWithinTrustedRoot } = require('./path-safety');
 
 const AGENT_DATA_HOME_ENV = 'ECC_AGENT_DATA_HOME';
-const DEFAULT_CLAUDE_DIR_NAME = '.zcode';
+const DEFAULT_CLAUDE_DIR_NAME = '.claude';
 const DEFAULT_CURSOR_ECC_DIR_SEGMENTS = ['.cursor', 'ecc'];
 const PROJECT_CONFIG_RELATIVE = path.join('.cursor', 'ecc-agent-data.json');
 
@@ -27,7 +27,7 @@ const PROJECT_CONFIG_RELATIVE = path.join('.cursor', 'ecc-agent-data.json');
  * Intentionally mirrors `getHomeDir()` in `scripts/lib/utils.js` (HOME/USERPROFILE,
  * then `os.homedir()`). Do not import `utils.getHomeDir` here: `utils.js` already
  * requires this module (`resolveAgentDataHome`), which would create a circular
- * dependency and risk divergent defaults for `~/.cursor/ecc` vs `~/.zcode`.
+ * dependency and risk divergent defaults for `~/.cursor/ecc` vs `~/.claude`.
  *
  * If consolidation is needed later, prefer one of:
  *
@@ -167,7 +167,7 @@ function readProjectConfig(projectDir) {
 function resolveProjectDir() {
   const candidates = [
     process.env.CURSOR_PROJECT_DIR,
-    process.env.ZCODE_PROJECT_DIR,
+    process.env.CLAUDE_PROJECT_DIR,
     process.cwd(),
   ];
 

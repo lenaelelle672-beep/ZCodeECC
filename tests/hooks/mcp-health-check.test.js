@@ -270,6 +270,53 @@ async function runTests() {
     }
   })) passed++; else failed++;
 
+  if (await asyncTest('uses real ZCode project config and ZCode state paths', async () => {
+    const tempDir = createTempDir();
+    const homeDir = path.join(tempDir, 'home');
+    const configPath = path.join(tempDir, '.zcode', 'config.json');
+    const expectedStatePath = path.join(homeDir, '.zcode', 'ecc-data', 'mcp-health-cache.json');
+    const serverScript = path.join(tempDir, 'zcode-path-server.js');
+
+    try {
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.mkdirSync(homeDir, { recursive: true });
+      fs.writeFileSync(serverScript, "setInterval(() => {}, 1000);\n");
+      writeConfig(configPath, {
+        mcp: {
+          servers: {
+            zcodedefault: createCommandConfig(serverScript)
+          }
+        }
+      });
+
+      const input = { tool_name: 'mcp__zcodedefault__list', tool_input: {} };
+      const result = runHook(
+        input,
+        {
+          ZCODE_HOOK_EVENT_NAME: 'PreToolUse',
+          CLAUDE_HOOK_EVENT_NAME: null,
+          ECC_HARNESS: 'zcode',
+          ECC_MCP_CONFIG_PATH: null,
+          ECC_MCP_HEALTH_STATE_PATH: null,
+          ECC_AGENT_DATA_HOME: null,
+          ECC_MCP_HEALTH_TIMEOUT_MS: '100',
+          HOME: homeDir,
+          USERPROFILE: homeDir
+        },
+        { cwd: tempDir }
+      );
+
+      assert.strictEqual(result.code, 0, `Expected ZCode default-path server to pass, got ${result.code}: ${result.stderr}`);
+      assert.strictEqual(result.stdout.trim(), JSON.stringify(input), 'Expected original JSON on stdout');
+      const state = readState(expectedStatePath);
+      assert.strictEqual(state.servers.zcodedefault.status, 'healthy');
+      assert.strictEqual(fs.realpathSync(state.servers.zcodedefault.source), fs.realpathSync(configPath));
+      assert.ok(!fs.existsSync(path.join(homeDir, '.claude')));
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  })) passed++; else failed++;
+
   if (test('uses cached healthy and unhealthy states without probing configs', () => {
     const tempDir = createTempDir();
     const now = Date.now();

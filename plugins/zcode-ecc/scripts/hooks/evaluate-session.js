@@ -4,8 +4,8 @@
  *
  * Cross-platform (Windows, macOS, Linux)
  *
- * Runs on Stop hook to extract reusable patterns from ZCode sessions.
- * Reads transcript_path from stdin JSON (ZCode hook input).
+ * Runs on Stop hook to extract reusable patterns from Claude Code sessions.
+ * Reads transcript_path from stdin JSON (Claude Code hook input).
  *
  * Why Stop hook instead of UserPromptSubmit:
  * - Stop runs once at session end (lightweight)
@@ -22,7 +22,7 @@ const {
   log
 } = require('../lib/utils');
 
-// Read hook input from stdin (ZCode provides transcript_path via stdin JSON)
+// Read hook input from stdin (Claude Code provides transcript_path via stdin JSON)
 const MAX_STDIN = 1024 * 1024;
 let stdinData = '';
 process.stdin.setEncoding('utf8');

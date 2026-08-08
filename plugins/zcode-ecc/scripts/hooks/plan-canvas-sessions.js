@@ -24,7 +24,7 @@ function stateDir() {
   if (override && override.trim()) return path.resolve(override.trim());
   const dataHome = process.env.ECC_AGENT_DATA_HOME;
   if (dataHome && dataHome.trim()) return path.join(path.resolve(dataHome.trim()), 'plan-canvas');
-  return path.join(os.homedir(), '.zcode', 'plan-canvas');
+  return path.join(os.homedir(), '.claude', 'plan-canvas');
 }
 
 function openSessions() {

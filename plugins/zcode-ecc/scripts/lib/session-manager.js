@@ -1,9 +1,9 @@
 /**
- * Session Manager Library for ZCode
+ * Session Manager Library for Claude Code
  * Provides core session CRUD operations for listing, loading, and managing sessions
  *
- * Sessions are stored as markdown files in ~/.zcode/session-data/ with
- * legacy read compatibility for ~/.zcode/sessions/:
+ * Sessions are stored as markdown files in ~/.claude/session-data/ with
+ * legacy read compatibility for ~/.claude/sessions/:
  * - YYYY-MM-DD-session.tmp (old format)
  * - YYYY-MM-DD-<short-id>-session.tmp (new format)
  */

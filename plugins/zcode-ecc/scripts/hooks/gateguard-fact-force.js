@@ -96,7 +96,7 @@ function getExtraDestructiveRegex() {
 
 // Operator-supplied path exemptions. Comma-separated globs (`GATEGUARD_EXEMPT_GLOBS`)
 // matched against the normalized (forward-slash, lowercased) file path. First-touch
-// fact-forcing is skipped for a matching Edit/Write/Edit target — intended for
+// fact-forcing is skipped for a matching Edit/Write/MultiEdit target — intended for
 // low-import-value trees (tests, generated artifacts, scratch dirs) where "who imports
 // this / what schema" carries no signal. Memoized on the env value; fail-open (a
 // malformed pattern is dropped, never throws). `*` matches within a path segment,
@@ -763,7 +763,7 @@ function resolveSessionKey(data) {
     return hashSessionKey('tx', path.resolve(String(transcriptPath).trim()));
   }
 
-  const projectFingerprint = process.env.ZCODE_PROJECT_DIR || process.cwd();
+  const projectFingerprint = process.env.CLAUDE_PROJECT_DIR || process.cwd();
   return hashSessionKey('proj', path.resolve(projectFingerprint));
 }
 
@@ -979,7 +979,7 @@ function normalizeForMatch(value) {
 
 function isClaudeSettingsPath(filePath) {
   const normalized = normalizeForMatch(filePath);
-  return /(^|\/)\.zcode\/settings(?:\.[^/]+)?\.json$/.test(normalized);
+  return /(^|\/)\.claude\/settings(?:\.[^/]+)?\.json$/.test(normalized);
 }
 
 function isReadOnlyGitIntrospection(command) {
@@ -1185,7 +1185,7 @@ function run(rawInput) {
   const rawToolName = data.tool_name || '';
   const toolInput = data.tool_input || {};
   // Normalize: case-insensitive matching via lookup map
-  const TOOL_MAP = { edit: 'Edit', write: 'Write', multiedit: 'Edit', bash: 'Bash' };
+  const TOOL_MAP = { edit: 'Edit', write: 'Write', multiedit: 'MultiEdit', bash: 'Bash' };
   const toolName = TOOL_MAP[rawToolName.toLowerCase()] || rawToolName;
   const inSubagent = isSubagentInvocation(data);
 
@@ -1214,7 +1214,7 @@ function run(rawInput) {
     return rawInput; // allow
   }
 
-  if (toolName === 'Edit') {
+  if (toolName === 'MultiEdit') {
     if (inSubagent) {
       return rawInput; // parent session already passed the first-touch file gate
     }

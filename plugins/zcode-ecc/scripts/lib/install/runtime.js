@@ -32,7 +32,7 @@ function createInstallPlanFromRequest(request, options = {}) {
       excludeComponentIds: request.excludeComponentIds,
       projectRoot: options.projectRoot,
       homeDir: options.homeDir,
-      claudeRulesDir: options.zcodeRulesDir,
+      claudeRulesDir: options.claudeRulesDir,
       sourceRoot: options.sourceRoot,
     });
   }
@@ -43,7 +43,7 @@ function createInstallPlanFromRequest(request, options = {}) {
       languages: request.languages,
       projectRoot: options.projectRoot,
       homeDir: options.homeDir,
-      claudeRulesDir: options.zcodeRulesDir,
+      claudeRulesDir: options.claudeRulesDir,
       sourceRoot: options.sourceRoot,
     });
   }

@@ -25,15 +25,15 @@ function normalizeGuidedInstallRequest(input = {}) {
 
   const includesClaude = harnesses.includes('claude');
   const includesKimi = harnesses.includes('kimi');
-  if (!includesClaude && (input.zcodeScope !== undefined || input.zcodeHooks !== undefined)) {
+  if (!includesClaude && (input.claudeScope !== undefined || input.claudeHooks !== undefined)) {
     throw new Error('Claude scope and hook options require Claude to be selected.');
   }
   if (!includesKimi && input.profile !== undefined) {
     throw new Error('The managed install profile requires Kimi to be selected.');
   }
 
-  const claudeScope = includesClaude ? (input.zcodeScope || 'user') : undefined;
-  const claudeHooks = includesClaude ? (input.zcodeHooks || 'standard') : undefined;
+  const claudeScope = includesClaude ? (input.claudeScope || 'user') : undefined;
+  const claudeHooks = includesClaude ? (input.claudeHooks || 'standard') : undefined;
   const profile = includesKimi ? (input.profile || 'core') : undefined;
   if (claudeScope && !VALID_CLAUDE_SCOPES.has(claudeScope)) {
     throw new Error(`Invalid Claude scope: ${claudeScope}`);
@@ -352,7 +352,7 @@ function applyPreflightedManagedPlan(entry) {
 function defaultDependencies(options = {}) {
   return {
     previewClaude: request => require('../setup').reconcileClaudePlugin(
-      { dryRun: true, hooks: request.zcodeHooks, scope: request.zcodeScope }
+      { dryRun: true, hooks: request.claudeHooks, scope: request.claudeScope }
     ),
     previewCodex: () => require('./codex-plugin-setup').reconcileCodexPlugin({ dryRun: true }),
     createManagedPlan: request => require('./install/runtime').createInstallPlanFromRequest(
@@ -368,7 +368,7 @@ function defaultDependencies(options = {}) {
     ),
     preflightManaged: preflightManagedPlan,
     applyClaude: request => require('../setup').reconcileClaudePlugin(
-      { dryRun: false, hooks: request.zcodeHooks, scope: request.zcodeScope }
+      { dryRun: false, hooks: request.claudeHooks, scope: request.claudeScope }
     ),
     applyCodex: () => require('./codex-plugin-setup').reconcileCodexPlugin({ dryRun: false }),
     applyManaged: applyPreflightedManagedPlan,

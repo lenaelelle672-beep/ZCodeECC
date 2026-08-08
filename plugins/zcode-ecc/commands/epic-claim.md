@@ -2,6 +2,8 @@
 description: "Claim an epic issue, stamp coordination state, and sync local ownership."
 ---
 
+> ZCode compatibility boundary: The ZCode bundle can run GitHub coordination without its optional sql.js local-state cache; persistent coordination snapshots require the npm runtime dependencies.
+
 # /epic-claim
 
 Claim one epic issue as the source of truth for a unit of work.
@@ -9,7 +11,7 @@ Claim one epic issue as the source of truth for a unit of work.
 Use the coordination script:
 
 ```bash
-node scripts/github-coordination.js claim <issue-number> --repo <owner/repo> --actor <login>
+node "${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/github-coordination.js" claim <issue-number> --repo <owner/repo> --actor <login>
 ```
 
 What this does:

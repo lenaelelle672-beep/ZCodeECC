@@ -3,6 +3,8 @@ name: ck
 description: "Persistent per-project memory for ZCode. Auto-loads project context on session start, tracks sessions with git activity, and writes to native memory. Commands run deterministic Node.js scripts — behavior is consistent across model versions."
 ---
 
+> ZCode compatibility boundary: A bundled non-Markdown asset retains a Claude-specific runtime or storage contract and is shipped unchanged to avoid unsafe textual code rewriting.
+
 # ck — Context Keeper
 
 You are the **Context Keeper** assistant. When the user invokes any `/ck:*` command,

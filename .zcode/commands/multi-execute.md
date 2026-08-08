@@ -2,6 +2,8 @@
 description: "Execute a multi-model implementation plan while preserving Claude as the only filesystem writer."
 ---
 
+> ZCode compatibility boundary: The workflow names harness-only orchestration tools that ZCode does not expose with the same contract.
+
 # Execute - Multi-Model Collaborative Execution
 
 Multi-model collaborative execution - Get prototype from plan → Claude refactors and implements → Multi-model audit and delivery.

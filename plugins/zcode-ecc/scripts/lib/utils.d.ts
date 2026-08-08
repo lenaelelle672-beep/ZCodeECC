@@ -1,5 +1,5 @@
 /**
- * Cross-platform utility functions for ZCode hooks and scripts.
+ * Cross-platform utility functions for Claude Code hooks and scripts.
  * Works on Windows, macOS, and Linux.
  */
 
@@ -17,7 +17,7 @@ export function getHomeDir(): string;
 
 /**
  * ECC agent data root for memory persistence and related state.
- * Defaults to ~/.zcode; override with ECC_AGENT_DATA_HOME (e.g. ~/.cursor/ecc).
+ * Defaults to ~/.claude; override with ECC_AGENT_DATA_HOME (e.g. ~/.cursor/ecc).
  */
 export function getAgentDataHome(): string;
 
@@ -164,7 +164,7 @@ export interface ReadStdinJsonOptions {
  */
 export function readStdinJson(options?: ReadStdinJsonOptions): Promise<Record<string, unknown>>;
 
-/** Log a message to stderr (visible to user in ZCode terminal) */
+/** Log a message to stderr (visible to user in Claude Code terminal) */
 export function log(message: string): void;
 
 /** Output data to stdout (returned to Claude's context) */

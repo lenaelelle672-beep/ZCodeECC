@@ -2,6 +2,8 @@
 description: "Run a frontend-focused multi-model workflow for components, layouts, animation, and UI polish."
 ---
 
+> ZCode compatibility boundary: The workflow names harness-only orchestration tools that ZCode does not expose with the same contract.
+
 # Frontend - Frontend-Focused Development
 
 Frontend-focused workflow (Research → Ideation → Plan → Execute → Optimize → Review), Gemini-led.

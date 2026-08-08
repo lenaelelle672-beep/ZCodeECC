@@ -57,24 +57,24 @@ export interface GetPackageManagerOptions {
  *
  * Detection priority:
  * 1. CLAUDE_PACKAGE_MANAGER environment variable
- * 2. Project-specific config (.zcode/package-manager.json)
+ * 2. Project-specific config (.claude/package-manager.json)
  * 3. package.json `packageManager` field
  * 4. Lock file detection
- * 5. Global user preference (~/.zcode/package-manager.json)
+ * 5. Global user preference (~/.claude/package-manager.json)
  * 6. Default to npm (no child processes spawned)
  */
 export function getPackageManager(options?: GetPackageManagerOptions): PackageManagerResult;
 
 /**
  * Set the user's globally preferred package manager.
- * Saves to ~/.zcode/package-manager.json.
+ * Saves to ~/.claude/package-manager.json.
  * @throws If pmName is not a known package manager or if save fails
  */
 export function setPreferredPackageManager(pmName: PackageManagerName): { packageManager: string; setAt: string };
 
 /**
  * Set a project-specific preferred package manager.
- * Saves to <projectDir>/.zcode/package-manager.json.
+ * Saves to <projectDir>/.claude/package-manager.json.
  * @throws If pmName is not a known package manager
  */
 export function setProjectPackageManager(pmName: PackageManagerName, projectDir?: string): { packageManager: string; setAt: string };

@@ -10,7 +10,7 @@ const { spawnSync } = require('child_process');
 const DEFAULT_ZCODE_CLI = '/Applications/ZCode.app/Contents/Resources/glm/zcode.cjs';
 const EXPECTED = Object.freeze({
   commands: 94,
-  hooks: 20,
+  hooks: 19,
   skills: 373,
 });
 

@@ -51,8 +51,8 @@ function parseAccumulator(raw) {
  */
 function isPluginClonePath(filePath, cwd = process.cwd(), homeDir = os.homedir()) {
   const resolved = path.resolve(filePath);
-  const roots = [path.join(cwd, '.zcode', 'plugins')];
-  if (homeDir) roots.push(path.join(homeDir, '.zcode', 'plugins'));
+  const roots = [path.join(cwd, '.claude', 'plugins')];
+  if (homeDir) roots.push(path.join(homeDir, '.claude', 'plugins'));
 
   return roots.some(root => {
     const rel = path.relative(root, resolved);

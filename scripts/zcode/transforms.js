@@ -23,6 +23,38 @@ const TEXT_REPLACEMENTS = Object.freeze([
   ['Task tool', 'Agent tool'],
 ]);
 
+const PORTABLE_RUNTIME_SCRIPTS = new Set([
+  'github-coordination.js',
+  'harness-audit.js',
+  'install-apply.js',
+  'install-plan.js',
+  'orchestrate-worktrees.js',
+  'plan-canvas.js',
+  'setup-package-manager.js',
+  'skills-health.js',
+]);
+
+function portableRuntimeCommand(scriptName) {
+  return `node "\${ZCODE_PLUGIN_ROOT:-$HOME/.zcode}/scripts/${scriptName}"`;
+}
+
+function rewritePortableRuntimeReferences(source) {
+  let result = String(source || '');
+  result = result.replace(
+    /node\s+(?:"\$ZCODE_PLUGIN_ROOT\/scripts\/|scripts\/)([a-z0-9-]+\.js)"?/gi,
+    (match, scriptName) => (
+      PORTABLE_RUNTIME_SCRIPTS.has(scriptName)
+        ? portableRuntimeCommand(scriptName)
+        : match
+    )
+  );
+  result = result.replace(
+    /\becc-plan-canvas(?=\s+(?:open|await|end)\b)/g,
+    portableRuntimeCommand('plan-canvas.js')
+  );
+  return result;
+}
+
 function transformHarnessText(source) {
   let result = String(source || '');
   for (const [from, to] of TEXT_REPLACEMENTS) {
@@ -45,7 +77,7 @@ function adaptSkillMarkdown(source, fallbackName) {
   );
   return formatFrontmatter(
     { name, description },
-    transformHarnessText(parsed.body)
+    rewritePortableRuntimeReferences(transformHarnessText(parsed.body))
   );
 }
 
@@ -116,7 +148,10 @@ function adaptCommandMarkdown(source) {
     fields['disable-noninteractive'] = true;
   }
 
-  return formatFrontmatter(fields, transformHarnessText(parsed.body));
+  return formatFrontmatter(
+    fields,
+    rewritePortableRuntimeReferences(transformHarnessText(parsed.body))
+  );
 }
 
 function normalizeHookMatcher(value) {
@@ -135,5 +170,6 @@ module.exports = {
   adaptSkillMarkdown,
   clampDescription,
   normalizeHookMatcher,
+  rewritePortableRuntimeReferences,
   transformHarnessText,
 };
