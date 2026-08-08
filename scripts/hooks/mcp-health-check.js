@@ -48,7 +48,10 @@ function stateFilePath() {
   if (process.env.ECC_MCP_HEALTH_STATE_PATH) {
     return path.resolve(process.env.ECC_MCP_HEALTH_STATE_PATH);
   }
-  return path.join(os.homedir(), '.claude', 'mcp-health-cache.json');
+  const dataHome = process.env.ECC_AGENT_DATA_HOME
+    ? path.resolve(process.env.ECC_AGENT_DATA_HOME)
+    : path.join(os.homedir(), '.claude');
+  return path.join(dataHome, 'mcp-health-cache.json');
 }
 
 function configPaths() {
@@ -181,7 +184,8 @@ function extractMcpTargetFromRaw(raw) {
 function resolveServerConfig(serverName) {
   for (const filePath of configPaths()) {
     const data = readJsonFile(filePath);
-    const server = data?.mcpServers?.[serverName]
+    const server = data?.mcp?.servers?.[serverName]
+      || data?.mcpServers?.[serverName]
       || data?.mcp_servers?.[serverName]
       || null;
 

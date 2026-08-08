@@ -50,6 +50,17 @@
 > [!WARNING]
 > **Official sources only.** Install ECC only from verified channels: the GitHub repository [github.com/affaan-m/ECC](https://github.com/affaan-m/ECC), the npm packages [`ecc-universal`](https://www.npmjs.com/package/ecc-universal) and [`ecc-agentshield`](https://www.npmjs.com/package/ecc-agentshield), the [GitHub App](https://github.com/apps/ecc-tools), the plugin slug `ecc@ecc`, and the project website [ecc.tools](https://ecc.tools). Third-party re-uploads and unofficial mirrors are not maintained or reviewed by the project and may contain malware.
 
+<!-- ZCodeECC fork notice -->
+
+> [!IMPORTANT]
+> **ZCodeECC fork.** This fork adds a generated, isolated ZCode adapter for ECC
+> 2.2.0. Install the `zcode-ecc` entry from
+> [`lenaelelle672-beep/ZCodeECC`](https://github.com/lenaelelle672-beep/ZCodeECC),
+> not the repository root as an inline plugin. See the [ZCode guide](docs/ZCODE.md)
+> for the 624-item compatibility inventory, hook warning, install paths, and
+> real ZCode CLI acceptance results. Upstream ECC remains
+> [`affaan-m/ECC`](https://github.com/affaan-m/ECC).
+
 <div align="center">
 
 <table aria-label="ECC primary links">

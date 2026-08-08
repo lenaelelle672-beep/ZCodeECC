@@ -1,0 +1,14 @@
+{
+  "mcp": {
+    "servers": {
+      "memxus": {
+        "type": "http",
+        "url": "https://mcp.memxus.com/mcp",
+        "headers": {
+          "Authorization": "Bearer YOUR_MEMXUS_API_KEY_HERE"
+        },
+        "enabled": false
+      }
+    }
+  }
+}

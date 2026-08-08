@@ -1,0 +1,15 @@
+{
+  "mcp": {
+    "servers": {
+      "squish": {
+        "type": "stdio",
+        "command": "npx",
+        "args": [
+          "-y",
+          "squish-memory"
+        ],
+        "enabled": false
+      }
+    }
+  }
+}

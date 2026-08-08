@@ -145,6 +145,23 @@ const HARNESS_CAPABILITIES = deepFreeze([
     aliases: ['open-code'],
   },
   {
+    id: 'zcode',
+    label: 'ZCode',
+    targetIds: ['zcode'],
+    channel: 'managed-home',
+    installMode: 'managed-home',
+    guidedReady: false,
+    availability: 'advanced',
+    destination: '~/.zcode',
+    scopes: [scope('home', 'zcode', '~/.zcode')],
+    hooks: hooks(
+      'not-configured',
+      false,
+      'The managed-home adapter does not configure hooks. Install the native ZCodeECC plugin to use the adapted hook bridge; plugin hooks run immediately when enabled.'
+    ),
+    aliases: ['z-code'],
+  },
+  {
     id: 'codebuddy',
     label: 'CodeBuddy',
     targetIds: ['codebuddy'],

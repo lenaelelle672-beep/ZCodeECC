@@ -1,0 +1,15 @@
+{
+  "mcp": {
+    "servers": {
+      "token-optimizer": {
+        "type": "stdio",
+        "command": "npx",
+        "args": [
+          "-y",
+          "token-optimizer-mcp"
+        ],
+        "enabled": false
+      }
+    }
+  }
+}

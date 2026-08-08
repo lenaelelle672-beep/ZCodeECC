@@ -16,6 +16,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed",
         "hermes",
         "openclaw",
@@ -44,6 +45,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed",
         "hermes",
         "openclaw",
@@ -72,6 +74,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed",
         "hermes",
         "openclaw",
@@ -133,6 +136,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed",
         "hermes",
         "openclaw",
@@ -228,6 +232,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -263,6 +268,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -290,6 +296,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed",
         "hermes",
         "openclaw",
@@ -361,6 +368,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed",
         "hermes",
         "openclaw",
@@ -397,6 +405,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -443,6 +452,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -477,6 +487,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -516,6 +527,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -560,6 +572,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -591,6 +604,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -622,6 +636,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed",
         "hermes",
         "openclaw",
@@ -653,6 +668,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -685,6 +701,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -710,7 +727,8 @@
         "claude",
         "claude-project",
         "codex",
-        "opencode"
+        "opencode",
+        "zcode"
       ],
       "dependencies": [
         "commands-core",
@@ -743,6 +761,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -804,6 +823,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -846,6 +866,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -875,6 +896,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -912,6 +934,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [
@@ -939,6 +962,7 @@
         "codebuddy",
         "joycode",
         "qwen",
+        "zcode",
         "zed"
       ],
       "dependencies": [

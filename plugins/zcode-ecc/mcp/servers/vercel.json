@@ -1,0 +1,11 @@
+{
+  "mcp": {
+    "servers": {
+      "vercel": {
+        "type": "http",
+        "url": "https://mcp.vercel.com",
+        "enabled": false
+      }
+    }
+  }
+}

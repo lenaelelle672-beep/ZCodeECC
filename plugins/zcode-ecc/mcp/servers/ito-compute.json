@@ -1,0 +1,14 @@
+{
+  "mcp": {
+    "servers": {
+      "ito-compute": {
+        "type": "stdio",
+        "command": "node",
+        "args": [
+          "/absolute/path/to/ito-cloud-runtime/cli/ito-compute-cli/dist/bin/ito-mcp.js"
+        ],
+        "enabled": false
+      }
+    }
+  }
+}

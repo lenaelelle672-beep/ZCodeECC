@@ -1,0 +1,15 @@
+{
+  "mcp": {
+    "servers": {
+      "magic": {
+        "type": "stdio",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@magicuidesign/mcp@latest"
+        ],
+        "enabled": false
+      }
+    }
+  }
+}

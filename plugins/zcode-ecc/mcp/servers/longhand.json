@@ -1,0 +1,14 @@
+{
+  "mcp": {
+    "servers": {
+      "longhand": {
+        "type": "stdio",
+        "command": "longhand",
+        "args": [
+          "mcp-server"
+        ],
+        "enabled": false
+      }
+    }
+  }
+}

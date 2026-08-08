@@ -15,6 +15,7 @@ const PLATFORM_SOURCE_PATH_OWNERS = Object.freeze({
   '.openclaw': 'openclaw',
   '.codebuddy': 'codebuddy',
   '.qwen': 'qwen',
+  '.zcode': 'zcode',
   '.zed': 'zed',
 });
 

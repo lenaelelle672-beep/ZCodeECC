@@ -32,10 +32,16 @@ function main() {
   const buildScript = path.join(repoRoot, "scripts", "build-opencode.js")
   const distEntry = path.join(repoRoot, ".opencode", "dist", "index.js")
   const tests = [
-    ["package.json exposes the OpenCode build and prepack hooks", () => {
+    ["package.json exposes the OpenCode and ZCode build and prepack hooks", () => {
       assert.strictEqual(packageJson.scripts["build:opencode"], "node scripts/build-opencode.js")
-      assert.strictEqual(packageJson.scripts.prepack, "npm run build:opencode")
+      assert.strictEqual(packageJson.scripts["build:zcode"], "node scripts/zcode/build-adapter.js")
+      assert.strictEqual(
+        packageJson.scripts.prepack,
+        "npm run build:opencode && npm run build:zcode"
+      )
       assert.ok(packageJson.files.includes(".opencode/"))
+      assert.ok(packageJson.files.includes(".zcode/"))
+      assert.ok(packageJson.files.includes("plugins/zcode-ecc/"))
     }],
     ["build script generates .opencode/dist", () => {
       const result = spawnSync("node", [buildScript], {
@@ -67,6 +73,10 @@ function main() {
       assert.ok(
         packagedPaths.has(".opencode/dist/tools/index.js"),
         "npm pack should include compiled OpenCode tool output"
+      )
+      assert.ok(
+        packagedPaths.has("plugins/zcode-ecc/.zcode-plugin/plugin.json"),
+        "npm pack should include the isolated native ZCode plugin"
       )
       assert.ok(
         packagedPaths.has(".claude-plugin/marketplace.json"),

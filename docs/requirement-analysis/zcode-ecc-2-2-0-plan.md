@@ -1,14 +1,16 @@
 # PLAN - ECC 2.2.0 全量适配 ZCode
 
+状态：已完成（2026-08-08）。开发、review、全量回归和真实 ZCode CLI 隔离验收均已通过。
+
 ## 输入文档
 
-- PASE: `/Users/feigao/project/Project/ZCodeECC/docs/requirement-analysis/zcode-ecc-2-2-0-pase.md`
+- PASE: `docs/requirement-analysis/zcode-ecc-2-2-0-pase.md`
 
 ## Step 1 - /develop
 
 ### 命令
 
-`/develop /Users/feigao/project/Project/ZCodeECC/docs/requirement-analysis/zcode-ecc-2-2-0-pase.md`
+`/develop docs/requirement-analysis/zcode-ecc-2-2-0-pase.md`
 
 ### 目标
 
@@ -24,7 +26,7 @@
 
 ### 输出
 
-- `.zcode-plugin/` 与 `.zcode/` 原生适配产物。
+- `plugins/zcode-ecc/.zcode-plugin/` 隔离原生插件与 `.zcode/` 受管适配产物。
 - 生成器、例外映射、兼容清单和 ZCode 安装适配器。
 - 必要的文档、配置、测试更新。
 
@@ -103,3 +105,12 @@
 - 满意就提交并推送 `feat/zcode-native-adapter` 到 `lenaelelle672-beep/ZCodeECC`。
 - 不满意则回到 `/develop` 或 `/review` 补齐。
 - 未经额外授权，不向 `affaan-m/ECC` 上游创建 PR，也不修改用户全局 ZCode 配置。
+
+## 执行结果
+
+- 固定 ECC 2.2.0 / 上游提交 `59a99d669f5466d99d5be8b6fce8c5f2677766d0`。
+- 生成 624 条逐项兼容记录：67 Agents、284 Skills、94 Commands、122 Rules、21 Hooks、36 个可选 MCP 定义。
+- ZCode 原生插件可发现 373 Skills、94 Commands、20 Hook groups；主插件启用 0 个 MCP。
+- `npm test`：3727/3727 通过；`npm run lint`、`npm run check:zcode` 与 npm 打包面验证通过。
+- ZCode Desktop 3.7.3 / CLI 0.16.1 隔离冒烟：0 条 warning/error diagnostics，未读取或改写真实 `~/.zcode`。
+- 受管 `zcode` 安装、卸载会保留无关文件；该路径不配置 Hook，Hook 仅由隔离原生插件提供。

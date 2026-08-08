@@ -1,0 +1,15 @@
+{
+  "mcp": {
+    "servers": {
+      "omega-memory": {
+        "type": "stdio",
+        "command": "uvx",
+        "args": [
+          "omega-memory",
+          "serve"
+        ],
+        "enabled": false
+      }
+    }
+  }
+}

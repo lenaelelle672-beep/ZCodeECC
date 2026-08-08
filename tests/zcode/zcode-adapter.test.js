@@ -5,6 +5,7 @@ const path = require('path');
 
 const repoRoot = path.resolve(__dirname, '../..');
 const builderPath = path.join(repoRoot, 'scripts', 'zcode', 'build-adapter.js');
+const pluginRelativeRoot = path.join('plugins', 'zcode-ecc');
 const supportedHookEvents = new Set([
   'SessionStart',
   'UserPromptSubmit',
@@ -79,19 +80,31 @@ function buildFixture() {
 
 console.log('\n=== Testing ZCode native adapter ===\n');
 
+test('publishes the isolated ZCode plugin through the repository marketplace', () => {
+  const marketplace = readJson(path.join(repoRoot, '.claude-plugin', 'marketplace.json'));
+  const zcodeEntry = marketplace.plugins.find(plugin => plugin.name === 'zcode-ecc');
+  assert.ok(zcodeEntry, 'missing zcode-ecc marketplace entry');
+  assert.strictEqual(zcodeEntry.source, './plugins/zcode-ecc');
+  assert.strictEqual(zcodeEntry.version, '2.2.0');
+  const packageJson = readJson(path.join(repoRoot, 'package.json'));
+  assert.ok(packageJson.files.includes('plugins/zcode-ecc/'));
+});
+
 test('builds a native ZCode plugin with exact ECC 2.2.0 surface counts', () => {
   const { outputRoot, result } = buildFixture();
   try {
-    const manifest = readJson(path.join(outputRoot, '.zcode-plugin', 'plugin.json'));
+    const pluginRoot = path.join(outputRoot, pluginRelativeRoot);
+    const manifest = readJson(path.join(pluginRoot, '.zcode-plugin', 'plugin.json'));
     const compatibility = readJson(path.join(outputRoot, '.zcode', 'compatibility-manifest.json'));
     const counts = sourceCounts();
 
     assert.strictEqual(manifest.name, 'zcode-ecc');
     assert.strictEqual(manifest.version, '2.2.0');
-    assert.strictEqual(manifest.skills, '.zcode/skills');
-    assert.strictEqual(manifest.commands, '.zcode/commands');
-    assert.strictEqual(manifest.hooks, '.zcode/hooks/hooks.json');
+    assert.strictEqual(manifest.skills, 'skills');
+    assert.strictEqual(manifest.commands, 'commands');
+    assert.ok(!Object.hasOwn(manifest, 'hooks'));
     assert.deepStrictEqual(manifest.mcpServers, {});
+    assert.ok(!fs.existsSync(path.join(outputRoot, '.zcode-plugin', 'plugin.json')));
     assert.deepStrictEqual(compatibility.sourceCounts, counts);
     assert.deepStrictEqual(result.sourceCounts, counts);
     assert.deepStrictEqual(counts, {
@@ -102,6 +115,32 @@ test('builds a native ZCode plugin with exact ECC 2.2.0 surface counts', () => {
       hooks: 21,
       mcp: 36,
     });
+  } finally {
+    fs.rmSync(outputRoot, { recursive: true, force: true });
+  }
+});
+
+test('builds an isolated plugin without canonical auto-discovery surfaces', () => {
+  const { outputRoot } = buildFixture();
+  try {
+    const pluginRoot = path.join(outputRoot, pluginRelativeRoot);
+    const pluginCompatibility = readJson(path.join(pluginRoot, 'compatibility-manifest.json'));
+    assert.strictEqual(listDirectories(path.join(pluginRoot, 'skills')).length, 284 + 67 + 22);
+    assert.strictEqual(fs.readdirSync(path.join(pluginRoot, 'commands')).filter(name => name.endsWith('.md')).length, 94);
+    assert.ok(fs.existsSync(path.join(pluginRoot, 'runtime', 'canonical-hooks.json')));
+    assert.ok(fs.existsSync(path.join(pluginRoot, 'scripts', 'zcode', 'hook-bridge.js')));
+    assert.ok(!fs.existsSync(path.join(pluginRoot, '.mcp.json')));
+    assert.ok(pluginCompatibility.artifacts.every(record => !String(record.target).startsWith('.zcode/')));
+
+    const canonicalHooks = fs.readFileSync(path.join(pluginRoot, 'runtime', 'canonical-hooks.json'), 'utf8');
+    const resolvedRuntime = fs.readFileSync(path.join(pluginRoot, 'scripts', 'lib', 'resolve-ecc-root.js'), 'utf8');
+    assert.doesNotMatch(canonicalHooks, /CLAUDE_PLUGIN_ROOT|\.claude/);
+    assert.doesNotMatch(resolvedRuntime, /CLAUDE_PLUGIN_ROOT|\.claude/);
+
+    const pluginHooks = readJson(path.join(pluginRoot, 'hooks', 'hooks.json')).hooks;
+    assert.ok(Object.keys(pluginHooks).every(event => supportedHookEvents.has(event)));
+    assert.ok(!Object.hasOwn(pluginHooks, 'PreCompact'));
+    assert.ok(!Object.hasOwn(pluginHooks, 'SessionEnd'));
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
   }
@@ -146,6 +185,11 @@ test('projects all agents and rule families into discoverable ZCode skills', () 
     assert.ok(plannerFrontmatter.description.length <= 1024);
     assert.match(planner, /role skill/i);
     assert.match(planner, /cannot enforce|does not enforce/i);
+
+    for (const skillName of generatedSkills.filter(name => name.startsWith('ecc-agent-'))) {
+      const source = fs.readFileSync(path.join(skillRoot, skillName, 'SKILL.md'), 'utf8');
+      assert.strictEqual((source.match(/^# /gm) || []).length, 1, `${skillName} has multiple H1 headings`);
+    }
 
     const commonRules = path.join(skillRoot, 'ecc-rules-common');
     assert.ok(fs.existsSync(path.join(commonRules, 'SKILL.md')));

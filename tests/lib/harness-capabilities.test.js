@@ -33,12 +33,12 @@ function runTests() {
   let passed = 0;
   let failed = 0;
 
-  if (test('represents all 14 registered targets exactly once across 13 harnesses', () => {
+  if (test('represents all 15 registered targets exactly once across 14 harnesses', () => {
     const catalogTargetIds = HARNESS_CAPABILITIES.flatMap(harness => harness.targetIds);
     const adapterTargetIds = listInstallTargetAdapters().map(adapter => adapter.target);
 
-    assert.strictEqual(HARNESS_CAPABILITIES.length, 13);
-    assert.strictEqual(new Set(catalogTargetIds).size, 14);
+    assert.strictEqual(HARNESS_CAPABILITIES.length, 14);
+    assert.strictEqual(new Set(catalogTargetIds).size, 15);
     assert.deepStrictEqual([...catalogTargetIds].sort(), [...SUPPORTED_INSTALL_TARGETS].sort());
     assert.deepStrictEqual([...catalogTargetIds].sort(), [...adapterTargetIds].sort());
   })) passed++; else failed++;
@@ -91,6 +91,7 @@ function runTests() {
       antigravity: ['project', './.agent'],
       gemini: ['project', './.gemini'],
       opencode: ['home', '~/.opencode'],
+      zcode: ['home', '~/.zcode'],
       codebuddy: ['project', './.codebuddy'],
       joycode: ['project', './.joycode'],
       qwen: ['home', '~/.qwen'],
@@ -119,6 +120,11 @@ function runTests() {
     assert.match(kimiHooks.note, /ECC hooks are not configured/i);
     assert.strictEqual(kimiHooks.summary, kimiHooks.note);
     assert.doesNotMatch(kimiHooks.note, /provider.*unsupported|Kimi.*unsupported/i);
+
+    const zcodeHooks = getHarnessCapability('zcode').hooks;
+    assert.strictEqual(zcodeHooks.mode, 'not-configured');
+    assert.strictEqual(zcodeHooks.eccConfigured, false);
+    assert.match(zcodeHooks.note, /native ZCodeECC plugin/i);
   })) passed++; else failed++;
 
   if (test('does not advertise unregistered Copilot, Kiro, or Pi harnesses', () => {
@@ -164,7 +170,7 @@ function runTests() {
 
     const first = listHarnessCapabilities();
     first.pop();
-    assert.strictEqual(listHarnessCapabilities().length, 13);
+    assert.strictEqual(listHarnessCapabilities().length, 14);
 
     const guided = listGuidedHarnesses();
     guided.reverse();

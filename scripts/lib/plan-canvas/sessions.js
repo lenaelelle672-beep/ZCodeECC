@@ -19,6 +19,10 @@ const VERDICTS = new Set(['approve', 'request-changes']);
 function resolveStateDir(env = process.env) {
   const override = env.ECC_PLAN_CANVAS_STATE_DIR;
   if (override && String(override).trim()) return path.resolve(String(override).trim());
+  const dataHome = env.ECC_AGENT_DATA_HOME;
+  if (dataHome && String(dataHome).trim()) {
+    return path.join(path.resolve(String(dataHome).trim()), 'plan-canvas');
+  }
   return path.join(os.homedir(), '.claude', 'plan-canvas');
 }
 

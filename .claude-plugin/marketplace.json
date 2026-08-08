@@ -42,6 +42,36 @@
         "best-practices"
       ],
       "strict": false
+    },
+    {
+      "name": "zcode-ecc",
+      "source": "./plugins/zcode-ecc",
+      "description": "ZCode-native ECC 2.2.0 projection with adapted skills, commands, rule packs, hook bridge, and disabled-by-default MCP fragments",
+      "version": "2.2.0",
+      "author": {
+        "name": "Affaan Mustafa and ZCodeECC maintainers"
+      },
+      "homepage": "https://github.com/lenaelelle672-beep/ZCodeECC",
+      "repository": "https://github.com/lenaelelle672-beep/ZCodeECC",
+      "license": "MIT",
+      "keywords": [
+        "zcode",
+        "agents",
+        "skills",
+        "hooks",
+        "commands",
+        "mcp"
+      ],
+      "category": "workflow",
+      "tags": [
+        "zcode",
+        "agents",
+        "skills",
+        "hooks",
+        "commands",
+        "mcp"
+      ],
+      "strict": false
     }
   ]
 }

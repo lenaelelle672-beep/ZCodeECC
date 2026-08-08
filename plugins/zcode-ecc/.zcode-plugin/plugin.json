@@ -1,0 +1,15 @@
+{
+  "name": "zcode-ecc",
+  "version": "2.2.0",
+  "description": "ZCode-native ECC 2.2.0: 67 agent role skills, 284 workflow skills, 94 commands, 122 rules, adapted hooks, and opt-in MCP fragments.",
+  "author": {
+    "name": "Affaan Mustafa and ZCodeECC maintainers",
+    "url": "https://github.com/affaan-m/ECC"
+  },
+  "homepage": "https://github.com/lenaelelle672-beep/ZCodeECC",
+  "repository": "https://github.com/lenaelelle672-beep/ZCodeECC",
+  "license": "MIT",
+  "skills": "skills",
+  "commands": "commands",
+  "mcpServers": {}
+}

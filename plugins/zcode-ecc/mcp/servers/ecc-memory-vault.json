@@ -1,0 +1,14 @@
+{
+  "mcp": {
+    "servers": {
+      "ecc-memory-vault": {
+        "type": "stdio",
+        "command": "ecc-memory-mcp",
+        "env": {
+          "ECC_MEMORY_HARNESS": "YOUR_LOWERCASE_HARNESS_SLUG_HERE"
+        },
+        "enabled": false
+      }
+    }
+  }
+}

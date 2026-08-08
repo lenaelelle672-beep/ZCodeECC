@@ -1,0 +1,14 @@
+{
+  "mcp": {
+    "servers": {
+      "nexus": {
+        "type": "stdio",
+        "command": "nexus",
+        "args": [
+          "mcp"
+        ],
+        "enabled": false
+      }
+    }
+  }
+}

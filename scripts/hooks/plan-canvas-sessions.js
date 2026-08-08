@@ -22,6 +22,8 @@ const os = require('os');
 function stateDir() {
   const override = process.env.ECC_PLAN_CANVAS_STATE_DIR;
   if (override && override.trim()) return path.resolve(override.trim());
+  const dataHome = process.env.ECC_AGENT_DATA_HOME;
+  if (dataHome && dataHome.trim()) return path.join(path.resolve(dataHome.trim()), 'plan-canvas');
   return path.join(os.homedir(), '.claude', 'plan-canvas');
 }
 

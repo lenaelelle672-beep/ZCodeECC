@@ -1,0 +1,11 @@
+{
+  "mcp": {
+    "servers": {
+      "devfleet": {
+        "type": "http",
+        "url": "http://localhost:18801/mcp",
+        "enabled": false
+      }
+    }
+  }
+}

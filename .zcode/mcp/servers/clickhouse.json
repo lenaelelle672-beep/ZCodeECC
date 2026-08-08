@@ -1,0 +1,11 @@
+{
+  "mcp": {
+    "servers": {
+      "clickhouse": {
+        "type": "http",
+        "url": "https://mcp.clickhouse.cloud/mcp",
+        "enabled": false
+      }
+    }
+  }
+}

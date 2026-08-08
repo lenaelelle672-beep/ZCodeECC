@@ -38,6 +38,12 @@ function appendLine(filePath, line) {
   fs.appendFileSync(filePath, `${line}\n`, 'utf8');
 }
 
+function agentDataHome() {
+  const override = process.env.ECC_AGENT_DATA_HOME;
+  if (override && override.trim()) return path.resolve(override.trim());
+  return path.join(os.homedir(), '.claude');
+}
+
 function run(rawInput, mode = 'audit') {
   const config = MODE_CONFIG[mode];
 
@@ -45,7 +51,7 @@ function run(rawInput, mode = 'audit') {
     if (config) {
       const input = String(rawInput || '').trim() ? JSON.parse(String(rawInput)) : {};
       const command = sanitizeCommand(input.tool_input?.command || '?');
-      appendLine(path.join(os.homedir(), '.claude', config.fileName), config.format(command));
+      appendLine(path.join(agentDataHome(), config.fileName), config.format(command));
     }
   } catch {
     // Logging must never block the calling hook.

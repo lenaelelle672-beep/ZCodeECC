@@ -1,0 +1,11 @@
+{
+  "mcp": {
+    "servers": {
+      "laraplugins": {
+        "type": "http",
+        "url": "https://laraplugins.io/mcp/plugins",
+        "enabled": false
+      }
+    }
+  }
+}

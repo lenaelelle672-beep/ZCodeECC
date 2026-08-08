@@ -1,0 +1,20 @@
+{
+  "mcp": {
+    "servers": {
+      "evalview": {
+        "type": "stdio",
+        "command": "python3",
+        "args": [
+          "-m",
+          "evalview",
+          "mcp",
+          "serve"
+        ],
+        "env": {
+          "OPENAI_API_KEY": "YOUR_OPENAI_API_KEY_HERE"
+        },
+        "enabled": false
+      }
+    }
+  }
+}

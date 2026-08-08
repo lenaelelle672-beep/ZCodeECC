@@ -5,6 +5,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const repoRoot = path.resolve(__dirname, '../..');
+const uninstallScript = path.join(repoRoot, 'scripts', 'uninstall.js');
 let passed = 0;
 let failed = 0;
 
@@ -60,7 +61,7 @@ test('maps agents, rules, commands, and selected workflow skills to generated ZC
   )));
 });
 
-test('keeps ZCode hooks out of the default full projection until explicit opt-in', () => {
+test('keeps hooks out of the managed ZCode projection and routes them to the native plugin', () => {
   const { resolveInstallPlan } = require('../../scripts/lib/install-manifests');
   const plan = resolveInstallPlan({
     target: 'zcode',
@@ -69,22 +70,23 @@ test('keeps ZCode hooks out of the default full projection until explicit opt-in
     homeDir: '/Users/example',
   });
   assert.strictEqual(plan.profileId, 'full');
-  assert.ok(plan.excludedModuleIds.includes('hooks-runtime'));
-  assert.ok(plan.warnings.some(warning => /ZCode default/i.test(warning)));
+  assert.ok(plan.skippedModuleIds.includes('hooks-runtime'));
+  assert.ok(!plan.excludedModuleIds.includes('hooks-runtime'));
+  assert.deepStrictEqual(plan.warnings, []);
   assert.ok(!plan.operations.some(operation => operation.moduleId === 'hooks-runtime'));
 });
 
 test('plans one adapted ZCode skill without installing the whole catalog', () => {
   const { resolveInstallPlan } = require('../../scripts/lib/install-manifests');
   const plan = resolveInstallPlan({
-    includeComponentIds: ['skill:tdd-workflow'],
+    includeComponentIds: ['skill:continuous-learning-v2'],
     target: 'zcode',
     repoRoot,
     projectRoot: repoRoot,
     homeDir: '/Users/example',
   });
-  assert.deepStrictEqual(plan.selectedModuleIds, ['skill-tdd-workflow']);
-  assert.ok(plan.operations.some(operation => normalize(operation.sourceRelativePath) === '.zcode/skills/tdd-workflow'));
+  assert.deepStrictEqual(plan.selectedModuleIds, ['skill-continuous-learning-v2']);
+  assert.ok(plan.operations.some(operation => normalize(operation.sourceRelativePath) === '.zcode/skills/continuous-learning-v2'));
   assert.ok(!plan.operations.some(operation => normalize(operation.sourceRelativePath) === '.zcode/skills/vue-patterns'));
 });
 
@@ -110,6 +112,54 @@ test('CLI dry-run emits a contained ZCode install plan without changing the temp
     assert.strictEqual(parsed.plan.installRoot, path.join(homeDir, '.zcode'));
     assert.ok(parsed.plan.operations.length > 0);
     assert.ok(!fs.existsSync(path.join(homeDir, '.zcode')));
+  } finally {
+    fs.rmSync(homeDir, { recursive: true, force: true });
+    fs.rmSync(projectDir, { recursive: true, force: true });
+  }
+});
+
+test('installs and uninstalls only managed ZCode files in an isolated home', () => {
+  const homeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zcode-ecc-home-'));
+  const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zcode-ecc-project-'));
+  const env = { ...process.env, HOME: homeDir };
+  try {
+    const installOutput = execFileSync('node', [
+      path.join(repoRoot, 'scripts', 'install-apply.js'),
+      '--profile', 'minimal',
+      '--target', 'zcode',
+      '--json',
+    ], {
+      cwd: projectDir,
+      env,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    const installed = JSON.parse(installOutput);
+    const zcodeRoot = path.join(homeDir, '.zcode');
+    const statePath = path.join(zcodeRoot, 'ecc-install-state.json');
+    const unrelatedPath = path.join(zcodeRoot, 'user-note.txt');
+    assert.strictEqual(installed.dryRun, false);
+    assert.ok(fs.existsSync(path.join(zcodeRoot, 'commands', 'plan.md')));
+    assert.ok(fs.existsSync(path.join(zcodeRoot, 'skills', 'ecc-agent-planner', 'SKILL.md')));
+    assert.ok(fs.existsSync(statePath));
+    fs.writeFileSync(unrelatedPath, 'preserve me', 'utf8');
+
+    const uninstallOutput = execFileSync('node', [
+      uninstallScript,
+      '--target', 'zcode',
+      '--json',
+    ], {
+      cwd: projectDir,
+      env,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    const uninstalled = JSON.parse(uninstallOutput);
+    assert.strictEqual(uninstalled.summary.errorCount, 0);
+    assert.strictEqual(uninstalled.summary.uninstalledCount, 1);
+    assert.ok(!fs.existsSync(statePath));
+    assert.ok(!fs.existsSync(path.join(zcodeRoot, 'commands', 'plan.md')));
+    assert.ok(fs.existsSync(unrelatedPath));
   } finally {
     fs.rmSync(homeDir, { recursive: true, force: true });
     fs.rmSync(projectDir, { recursive: true, force: true });

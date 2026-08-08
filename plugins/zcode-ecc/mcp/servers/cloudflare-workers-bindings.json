@@ -1,0 +1,11 @@
+{
+  "mcp": {
+    "servers": {
+      "cloudflare-workers-bindings": {
+        "type": "http",
+        "url": "https://bindings.mcp.cloudflare.com/mcp",
+        "enabled": false
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "mcp": {
+    "servers": {
+      "fal-ai": {
+        "type": "stdio",
+        "command": "npx",
+        "args": [
+          "-y",
+          "fal-ai-mcp-server"
+        ],
+        "env": {
+          "FAL_KEY": "YOUR_FAL_KEY_HERE"
+        },
+        "enabled": false
+      }
+    }
+  }
+}

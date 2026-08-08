@@ -4,7 +4,7 @@ const path = require('path');
 const { getInstallTargetAdapter, planInstallTargetScaffold } = require('./install-targets/registry');
 
 const DEFAULT_REPO_ROOT = path.join(__dirname, '../..');
-const SUPPORTED_INSTALL_TARGETS = ['claude', 'claude-project', 'cursor', 'antigravity', 'codex', 'gemini', 'opencode', 'codebuddy', 'joycode', 'qwen', 'zed', 'hermes', 'openclaw', 'kimi'];
+const SUPPORTED_INSTALL_TARGETS = ['claude', 'claude-project', 'cursor', 'antigravity', 'codex', 'gemini', 'opencode', 'codebuddy', 'joycode', 'qwen', 'zcode', 'zed', 'hermes', 'openclaw', 'kimi'];
 const COMPONENT_FAMILY_PREFIXES = {
   baseline: 'baseline:',
   language: 'lang:',
@@ -134,6 +134,7 @@ const LEGACY_LANGUAGE_EXTRA_MODULE_IDS = Object.freeze({
 });
 const TARGET_DEFAULT_PROFILE_IDS = Object.freeze({
   opencode: 'opencode',
+  zcode: 'full',
 });
 const TARGET_DEFAULT_EXCLUSIONS = Object.freeze({
   opencode: [
@@ -694,10 +695,11 @@ function resolveInstallPlan(options = {}) {
     excludedComponentIds,
     targetDefaultProfileId,
     targetDefaultExclusions,
-    warnings: targetDefaultExclusions.map(exclusion => (
-      `${exclusion.moduleId} is intentionally excluded from the OpenCode default. `
-        + `Opt in with: ${exclusion.optInCommand}`
-    )),
+    warnings: targetDefaultExclusions.map(exclusion => {
+      const targetLabel = target === 'opencode' ? 'OpenCode' : target;
+      return `${exclusion.moduleId} is intentionally excluded from the ${targetLabel} default. `
+        + `Opt in with: ${exclusion.optInCommand}`;
+    }),
     selectedModuleIds: selectedModules.map(module => module.id),
     skippedModuleIds: skippedModules.map(module => module.id),
     excludedModuleIds: excludedModules.map(module => module.id),

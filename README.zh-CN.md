@@ -31,6 +31,14 @@
 
 **来自 Anthropic 黑客马拉松获胜者的完整 Claude Code 配置集合。**
 
+> [!IMPORTANT]
+> **这是 ZCodeECC 适配 Fork。** 本 Fork 在 ECC 2.2.0 基线上增加了隔离的
+> ZCode 原生插件、受管安装目标、624 条逐项兼容清单和真实 ZCode CLI 验收。
+> 在 ZCode 中应安装 Marketplace 里的 `zcode-ecc`，不要把仓库根直接当作
+> inline 插件。完整安装方法、安全边界和已知限制见
+> [ZCodeECC 指南](docs/ZCODE.md)。上游 ECC 仍为
+> [`affaan-m/ECC`](https://github.com/affaan-m/ECC)。
+
 不止是配置文件，而是一整套完整系统：技能体系、本能行为、记忆优化、持续学习、安全扫描，以及研究优先的开发模式。
 包含可直接用于生产环境的智能体、技能模块、钩子、规则、MCP 配置，以及兼容传统命令的适配层——所有内容均经过 10 个多月高强度日常使用与真实产品开发迭代打磨而成。
 

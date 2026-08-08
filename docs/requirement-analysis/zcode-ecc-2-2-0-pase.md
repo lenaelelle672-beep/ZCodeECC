@@ -88,3 +88,12 @@
 1. 建立 `.zcode-plugin`、全量兼容清单与隔离 CLI 验证，先证明 ZCode 能发现全部投影能力。
 2. 完成安装目标、Agents/Rules 转 Skill、Skills/Commands 术语与路径适配。
 3. 完成 Hook bridge 与 opt-in MCP，运行全套回归、推送分支并记录不可等价项。
+
+## 10. 实施闭环
+
+- 已采用隔离插件根 `plugins/zcode-ecc/`。真实验证发现，把仓库根直接交给 ZCode 会自动探测上游 `skills/`、`commands/`、`hooks/hooks.json` 与 `.mcp.json`，因此根级 `.zcode-plugin` 方案被否决。
+- 624 个源能力记录均已映射且受确定性生成器保护；Agents 转为角色 Skills，Rules 转为 22 个技术域 Rule-pack Skills。
+- 21 个 Hook 来源形成 20 个 ZCode Hook groups：`PreCompact` 降级到 `SessionStart(compact)`，`SessionEnd` 最终清理没有原生等价，异步语义标为 `limited`。
+- 36 个 MCP 定义全部生成为 `enabled: false` 的独立片段，原生插件清单启用数为 0。
+- 受管 `~/.zcode` 安装只提供 Skills、Commands 与兼容清单，不配置 Hook；完整 Hook 能力通过原生插件交付，避免在用户配置 Hook 中错误使用仅插件上下文有效的根变量。
+- 全量回归为 3727/3727，通过真实 ZCode CLI 0.16.1 验证：373 Skills、94 Commands、20 Hook groups、0 个启用 MCP、0 条 warning/error diagnostics。

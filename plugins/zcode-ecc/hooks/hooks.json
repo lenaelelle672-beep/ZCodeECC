@@ -1,0 +1,334 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "PreToolUse",
+              "pre:bash:dispatcher",
+              "PreToolUse"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: pre:bash:dispatcher"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "PreToolUse",
+              "pre:write:doc-file-warning",
+              "PreToolUse"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: pre:write:doc-file-warning"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "PreToolUse",
+              "pre:edit-write:suggest-compact",
+              "PreToolUse"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: pre:edit-write:suggest-compact"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "PreToolUse",
+              "pre:observe:continuous-learning",
+              "PreToolUse"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: pre:observe:continuous-learning"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Write|Edit",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "PreToolUse",
+              "pre:governance-capture",
+              "PreToolUse"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: pre:governance-capture"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "PreToolUse",
+              "pre:config-protection",
+              "PreToolUse"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: pre:config-protection"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "PreToolUse",
+              "pre:mcp-health-check",
+              "PreToolUse"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: pre:mcp-health-check"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "PreToolUse",
+              "pre:edit-write:gateguard-fact-force",
+              "PreToolUse"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: pre:edit-write:gateguard-fact-force"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "PreCompact",
+              "pre:compact",
+              "SessionStart"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: pre:compact"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "SessionStart",
+              "session:start",
+              "SessionStart"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: session:start"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "SessionStart",
+              "session-start:plan-canvas-sessions",
+              "SessionStart"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: session-start:plan-canvas-sessions"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "PostToolUse",
+              "post:dispatcher:sync",
+              "PostToolUse"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: post:dispatcher:sync"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "PostToolUse",
+              "post:dispatcher:async",
+              "PostToolUse"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: post:dispatcher:async"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "PostToolUseFailure",
+              "post:mcp-health-check",
+              "PostToolUseFailure"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: post:mcp-health-check"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "Stop",
+              "stop:format-typecheck",
+              "Stop"
+            ],
+            "timeoutMs": 305000,
+            "statusMessage": "ZCodeECC: stop:format-typecheck"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "Stop",
+              "stop:check-console-log",
+              "Stop"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: stop:check-console-log"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "Stop",
+              "stop:session-end",
+              "Stop"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: stop:session-end"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "Stop",
+              "stop:evaluate-session",
+              "Stop"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: stop:evaluate-session"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "Stop",
+              "stop:cost-tracker",
+              "Stop"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: stop:cost-tracker"
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "${ZCODE_PLUGIN_ROOT}/scripts/zcode/hook-bridge.js",
+            "args": [
+              "Stop",
+              "stop:desktop-notify",
+              "Stop"
+            ],
+            "timeoutMs": 65000,
+            "statusMessage": "ZCodeECC: stop:desktop-notify"
+          }
+        ]
+      }
+    ]
+  }
+}
